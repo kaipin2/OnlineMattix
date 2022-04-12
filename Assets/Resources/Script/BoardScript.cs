@@ -5,7 +5,7 @@ using Photon.Realtime;
 
 public class BoardScript : MonoBehaviourPunCallbacks
 {
-    private GameObject board;
+    private GameObject board = null;
 
 
     public void ChangeColor(Color color)
@@ -59,7 +59,10 @@ public class BoardScript : MonoBehaviourPunCallbacks
     [PunRPC]
     private void RpcSetParent()
     {
-        if(board == null)      board = GameObject.Find("Canvas").gameObject;
+        if (board == null)
+        {
+            board = GameObject.Find("Canvas").gameObject;
+        }
         this.gameObject.transform.SetParent(board.transform, false);
     }
 

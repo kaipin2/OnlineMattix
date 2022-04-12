@@ -16,11 +16,12 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     private Buttons btn; //ボタンのスクリプト
     private bool Updata = true;
-    private bool RoomCreate = false; //自身がRoomを制作しているかどうか
+    private bool RoomCre = false; //自身がRoomを制作しているかどうか
+    private bool RoomIn = false; //自身がRoomに入っているかどうか
     private int participants = 0; //現在同じ部屋に入っているプレイヤーの人数
 
     private GameObject[] RoomButton = new GameObject[Const.CO.Number];
-     
+
     private string mode;                 // モード(ONLINE, OFFLINE)
     private string dispMessage = "";          // 画面項目：メッセージ
     private string dispRoomName;         // 画面項目：ルーム名
@@ -59,17 +60,12 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     };
     #endregion
 
-    //SecneをまたいでもObjectが破壊されないようにする
-    static PhotonManager Instance = null;
-
-    public static PhotonManager GetInstance()
-    {
-        if (Instance == null)
-        {
-            Instance = FindObjectOfType<PhotonManager>();
-        }
-        return Instance;
+    //ルームに入っているか判定するプロパティ
+    public bool Room{
+        set { RoomIn = value; }
+        get { return RoomIn; }
     }
+
 
     private void Start()
     {
@@ -79,17 +75,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         }
 
     }
-    /*
-    private void Awake()
-    {
-        if (this != GetInstance())
-        {
-            Destroy(this.gameObject);
-            return;
-        }
-        DontDestroyOnLoad(this.gameObject);
-    }
-    */
+
     public void SetMessage(string m)
     {
         dispMessage = m;
@@ -127,9 +113,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                     UnityEngine.Debug.Log("roomButtonList:" + room);
                 }
                 UnityEngine.Debug.Log("ONLINE:" + ONLINE);
-                UnityEngine.Debug.Log("RoomCreate:" + RoomCreate);
+                UnityEngine.Debug.Log("RoomCreate:" + RoomCre);
                 UnityEngine.Debug.Log("dispStatus:" + dispStatus);
                 UnityEngine.Debug.Log("dispMessage:" + dispMessage);
+                UnityEngine.Debug.Log("RoomOPS.IsVisible:" + RoomOPS.IsVisible);
             }
         }
     }
@@ -162,15 +149,14 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.IsConnected)
         {
             PhotonNetwork.Disconnect();
-            //UnityEngine.Debug.Log("in");
         }
         
         Updata = true;
-        RoomCreate = false;
+        RoomCre = false;
+        Room = false;
         ONLINE = false;
         dispMessage = "";
 
-        //UnityEngine.Debug.Log("in");
         dispStatus = "OFFLINE";
         //dispStatus = Status.OFFLINE.ToString();
         roomDispList = new List<RoomInfo>();
@@ -188,12 +174,14 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     //現在作られている部屋に入室するボタンを配置
     public void RoomButtonCreate()
     {
+        
+        
         int RoomSave = -1; //どこにButtonのObjectを配置するか
         RoomInfo DeleteRoom_button = null; //削除する部屋(のボタン)
         int textName = 0; //テキストの場所(子供の第何要素か)
 
         //Roomが作られていて、自身がRoomを作っていない時
-        if (roomDispList != null && roomDispList.Count > 0 && !RoomCreate && ONLINE)
+        if (roomDispList != null && roomDispList.Count > 0 && !RoomCre && ONLINE)
         {
             foreach (RoomInfo room in roomDispList) //Roomを1つずつ検索
             {
@@ -205,14 +193,13 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                         break;
                     }
                 }
-
                 if (roomButtonList.Contains(room)) //すでにButoonが作られているなら作らなくてよい
                 {
                     RoomSave = -1;
                 }
-
                 if (RoomSave != -1 && RoomButton[RoomSave] == null) //Buttonの制作
                 {
+                 
                     roomButtonList.Add(room); //作られたButtonにつながっている部屋を保存
 
                     Vector3 vec = new Vector3(-198 + (207 * (RoomSave / Const.CO.button_Ver)), 45 - (75 * (RoomSave % Const.CO.button_Ver)), 0);
@@ -235,7 +222,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                     RoomButton[RoomSave].transform.localScale = scale;
                     //ボタンのアクションの設定
                     RoomButton[RoomSave].GetComponent<Button>().onClick.AddListener(btn.RoomEnterButton);
-                    
                 }
 
             }
@@ -266,8 +252,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                 }
             }
         }
-
-        if (RoomCreate || !ONLINE) //自身がRoomを制作しているとき
+        
+        if (RoomCre || !ONLINE) //自身がRoomを制作しているとき
         { //制作したButtonをすべて削除
             roomButtonList.Clear();
 
@@ -282,8 +268,12 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             System.Array.Clear(RoomButton, 0, RoomButton.Length);
 
         }
+        
         roomButtonList.Remove(DeleteRoom_button);
+        
+        
     }
+
 
     //ロビーに入りなおす
     public void UpdataButtonOnClick()
@@ -319,9 +309,11 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public void DisConnectPhoton()
     {
         Updata = true;
+        Room = false;
         ONLINE = false;
-        RoomCreate = false;
-        roomDispList.Remove(PhotonNetwork.CurrentRoom);
+        RoomCre = false;
+        roomDispList.Clear();
+        //roomDispList.Remove(PhotonNetwork.CurrentRoom);
         PhotonNetwork.Disconnect();
     }
 
@@ -344,6 +336,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnDisconnected(DisconnectCause cause)
     {
         base.OnDisconnected(cause);
+        Room = false;
         dispMessage = "サーバから切断しました。";
         dispStatus = Status.OFFLINE.ToString();
     }
@@ -362,15 +355,16 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         base.OnRoomListUpdate(roomList);
+        
         // ルーム一覧更新
         foreach (var info in roomList)
         {
-            if (!info.RemovedFromList && !roomDispList.Contains(info))
+            if (!info.RemovedFromList)
             {
                 // 更新データが削除でない場合
                 roomDispList.Add(info);
             }
-            else if(info.RemovedFromList)
+            else
             {
                 // 更新データが削除の場合
                 roomDispList.Remove(info);
@@ -379,17 +373,25 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     }
 
     // ルーム作成処理
-    public void CreateRoom(string roomName)
+    public void RoomCreate(string roomName)
     {
-        RoomCreate = true;
-        dispRoomName = roomName;
-        PhotonNetwork.JoinOrCreateRoom(roomName, RoomOPS, TypedLobby.Default);
+        if (Room == false)
+        {
+            RoomCre = true;
+            Room = true;
+            dispRoomName = roomName;
+            PhotonNetwork.JoinOrCreateRoom(roomName, RoomOPS, TypedLobby.Default);
+        }
     }
 
     // ルーム入室処理
     public void ConnectToRoom(string roomName)
     {
-        PhotonNetwork.JoinRoom(roomName);
+        if (Room == false)
+        {
+            Room = true;
+            PhotonNetwork.JoinRoom(roomName);
+        }
 
     }
 
@@ -446,7 +448,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         //部屋に１人か３人以上いる時(設定で２人までしか部屋に入れない)
         else
         {
-            dispMessage = "人数が足りません\n" + dispMessage;
+            if(dispMessage.Split('\n')[0] != "人数が足りません")
+            {
+                dispMessage = "人数が足りません\n" + dispMessage;
+            }
             
         }
     }
@@ -456,21 +461,22 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     {
         SceneManager.LoadScene(Const.CO.MattixSceneName);
     }
+   
+
+
+    
     /*
     // ---------- 設定GUI ----------
     void OnGUI()
     {
-            float scale = Screen.height / 480.0f;
-            GUI.matrix = Matrix4x4.TRS(new Vector3(
-                Screen.width * 0.5f, Screen.height * 0.5f, 0),
-                Quaternion.identity,
-                new Vector3(scale, scale, 1.0f));
+        float scale = Screen.height / 480.0f;
+        GUI.matrix = Matrix4x4.TRS(new Vector3(
+            Screen.width * 0.5f, Screen.height * 0.5f, 0),
+            Quaternion.identity,
+            new Vector3(scale, scale, 1.0f));
 
-            GUI.Window(0, new Rect(-200, -200, 400, 400),
-                NetworkSettingWindow, "ロビー");
-
-
-
+        GUI.Window(0, new Rect(-200, -200, 400, 400),
+            NetworkSettingWindow, "Photon接続テスト");
     }
 
     Vector2 scrollPosition;
@@ -519,7 +525,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("作成 & 入室"))
                 {
-                    CreateRoom(dispRoomName);
+                    RoomCreate(dispRoomName);
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.Space(20);
@@ -543,12 +549,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                     // ルーム一覧
                     GUILayout.EndHorizontal();
                     foreach (RoomInfo roomInfo in roomDispList)
-                    {
-                        //UnityEngine.Debug.Log("roomInfo:"+ roomInfo);
                         if (GUILayout.Button(roomInfo.Name, GUI.skin.box, GUILayout.Width(360)))
                             ConnectToRoom(roomInfo.Name);
-                    }
-
                 }
                 GUILayout.EndScrollView();
             }

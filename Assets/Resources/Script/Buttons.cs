@@ -185,6 +185,7 @@ public class Buttons : MonoBehaviour
         OnClick(); //ボタンを押したときの音を鳴らす
         Enabled(OptionNumber);
     }
+    /*
     public void CreateRoomButton()
     {
         GameObject childTextObject;
@@ -197,6 +198,7 @@ public class Buttons : MonoBehaviour
         RoomNameText = childTextObject.GetComponent<TextMeshProUGUI>();
         PM_Script.CreateRoom(RoomNameText.text);
     }
+    */
     public void RoomEnterButton()
     {
         GameObject childTextObject;
@@ -315,6 +317,7 @@ public class Buttons : MonoBehaviour
         {
             str = new string[] { Const.CO.DisconnectName };
         }
+
     }
     public void ExitButton()
     {
@@ -336,7 +339,7 @@ public class Buttons : MonoBehaviour
     {
         GameObject RoomTextObject;
         TMP_InputField RoomNameText;
-
+        OnClick(); //ボタンを押したときの音を鳴らす
         PM_ScriptCreate();//PhotonManagerのComponentを制作
         if (PM_Script.ONLINE)
         {
@@ -346,9 +349,9 @@ public class Buttons : MonoBehaviour
             {
                 PM_Script.SetMessage("ルーム名を入力してください");
             }
-            else
+            else if(PM_Script.Room == false)
             {
-                PM_Script.CreateRoom(RoomNameText.text);
+                PM_Script.RoomCreate(RoomNameText.text);
             }
 
         }
@@ -358,6 +361,12 @@ public class Buttons : MonoBehaviour
         OnClick(); //ボタンを押したときの音を鳴らす
         EC_ScriptCreate();//EC_ScriptCreateのComponentを制作
         EC_Script.PageNest();
+    }
+    public void UpdataButton()
+    {
+        OnClick(); //ボタンを押したときの音を鳴らす
+        PM_ScriptCreate();//PhotonManagerのComponentを制作
+        PM_Script.UpdataButtonOnClick();
     }
     #endregion
     //画面を表示、非表示を変更する(Title ⇔ Option ⇔ Photon)

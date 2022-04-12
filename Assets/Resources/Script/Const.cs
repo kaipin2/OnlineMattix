@@ -59,6 +59,7 @@ namespace Const
         public static string GameBoardURL = "Prehabs/GameBoard/";
         //NomalButton‚ÌPrefab‚ªŠi”[‚³‚ê‚Ä‚¢‚éURL
         public static string NomalButtonURL = "Prehabs/";
+        public static string NomalButtonURL2 = "Prehabs/NomalButton";
         //ƒJƒƒ‰‚Ì–¼Ì
         public static string MainCamera = "Main Camera";
         //æ‚Á‚½‹î‚ğ’u‚­ˆÊ’u‚ğ¦‚·Object‚Ì–¼Ì(A:æè,B:Œãè)
