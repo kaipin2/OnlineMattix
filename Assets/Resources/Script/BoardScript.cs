@@ -7,7 +7,6 @@ public class BoardScript : MonoBehaviourPunCallbacks
 {
     private GameObject board = null;
 
-
     public void ChangeColor(Color color)
     {
         photonView.RPC(nameof(RpcChangeColor), RpcTarget.All,color);
