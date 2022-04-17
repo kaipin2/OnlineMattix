@@ -14,19 +14,21 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 {
     #region Private変数定義
 
+    private int BoardSize = 0;
+
     private Buttons btn; //ボタンのスクリプト
-    private bool Updata = true;
+    private bool ReEntry = false;
     private bool RoomCre = false; //自身がRoomを制作しているかどうか
     private bool RoomIn = false; //自身がRoomに入っているかどうか
     private int participants = 0; //現在同じ部屋に入っているプレイヤーの人数
 
-    private GameObject[] RoomButton = new GameObject[Const.CO.Number];
+    //private GameObject[] RoomButton = new GameObject[Const.CO.Number];
 
     private string mode;                 // モード(ONLINE, OFFLINE)
     private string dispMessage = "";          // 画面項目：メッセージ
     private string dispRoomName;         // 画面項目：ルーム名
     private List<RoomInfo> roomDispList; // 画面項目：ルーム一覧
-    private List<RoomInfo> roomButtonList; // 画面項目：ルーム一覧(Button表示するかどうか)
+    private List<GameObject> roomButtonList; // 画面項目：ルーム一覧(Button表示するかどうか)
 
     private GameObject StatusTextObject;//Status状態を示すテキストが存在するObject
     private TextMeshProUGUI StatusText;//Status状態を示すテキスト
@@ -34,6 +36,11 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     private GameObject MessageTextObject;//Mesagge状態を示すテキストが存在するObject
     private TextMeshProUGUI MessageText;//Mesagge状態を示すテキスト
 
+    private GameObject OptionStatusControllerObject;
+    private OptionStatusController OSC_Script;
+
+    private bool ready = false; //準備ができているかどうかの関数
+    private string OpponentName = ""; //対戦相手の名前
     #endregion
 
     #region Public変数定義
@@ -71,7 +78,11 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     {
         if (SceneManager.GetActiveScene().name == Const.CO.LobbySceneName)
         {
+            PhotonNetwork.AutomaticallySyncScene = true;
+            PhotonNetwork.IsMessageQueueRunning = true;
             initParam();
+            initMessage();
+            initPhoton();
         }
 
     }
@@ -92,13 +103,15 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             {
                 if (PhotonNetwork.PlayerList.Length != participants)//参加人数に変動があった場合
                 {
+                    
                     DisplayJoinedRoom(); // 表示を更新
                 }
 
             }
-            if (PhotonNetwork.IsConnected)
+            if (ready && PhotonNetwork.PlayerList.Length < RoomOPS.MaxPlayers)
             {
-                RoomButtonCreate();//現在作られている部屋に入室するボタンを配置
+                dispMessage = "相手がいなくなりました\n" + dispMessage;
+                ready = false;
             }
 
             //デバック用(「P」を押すと、現在の状況を表示)
@@ -108,7 +121,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                 {
                     UnityEngine.Debug.Log("roomDispList:" + room);
                 }
-                foreach (RoomInfo room in roomButtonList) //Roomを1つずつ検索
+                foreach (GameObject room in roomButtonList) //Roomを1つずつ検索
                 {
                     UnityEngine.Debug.Log("roomButtonList:" + room);
                 }
@@ -139,156 +152,174 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         if (MessageText == null)
         {
             MessageText = MessageTextObject.GetComponent<TextMeshProUGUI>();
-            MessageText.text = "";
         }
-        else
+        if(OptionStatusControllerObject == null)
         {
-            MessageText.text = "";
+            OptionStatusControllerObject = GameObject.Find(Const.CO.AudioCanvasName).gameObject;
         }
+        OSC_Script = OptionStatusControllerObject.GetComponent<OptionStatusController>();
 
-        if (PhotonNetwork.IsConnected)
-        {
-            PhotonNetwork.Disconnect();
-        }
-        
-        Updata = true;
+        MessageText.text = "";
+
+        ready = false;
+        ReEntry = false;
         RoomCre = false;
         Room = false;
-        ONLINE = false;
-        dispMessage = "";
+        ONLINE = true;
 
         dispStatus = "OFFLINE";
         //dispStatus = Status.OFFLINE.ToString();
         roomDispList = new List<RoomInfo>();
-        roomButtonList = new List<RoomInfo>();
+        roomButtonList = new List<GameObject>();
         PhotonNetwork.GameVersion = Const.CO.GameVersion;
-        for(int i = 0;i < Const.CO.Number ; i++)
-        {
-            RoomButton[i] = null;
-        }
-
         btn = this.gameObject.AddComponent<Buttons>();//ボタンのスクリプトを追加
 
+        
+
+
+    }
+
+    //ネットへの接続状態の初期化(ONLINEで初期化)
+    private void initPhoton()
+    {
+        if (PhotonNetwork.IsConnected)
+        {
+            PhotonNetwork.Disconnect();
+        }
+
+        ConnectPhoton(ONLINE); //オンライン
+    }
+
+    //テキストを初期化
+    private void initMessage()
+    {
+        dispMessage = "";
     }
 
     //現在作られている部屋に入室するボタンを配置
-    public void RoomButtonCreate()
+    public void RoomButtonCreate(RoomInfo r)
     {
-        
-        
-        int RoomSave = -1; //どこにButtonのObjectを配置するか
-        RoomInfo DeleteRoom_button = null; //削除する部屋(のボタン)
-        int textName = 0; //テキストの場所(子供の第何要素か)
+        GameObject roomButton = null;
 
-        //Roomが作られていて、自身がRoomを作っていない時
-        if (roomDispList != null && roomDispList.Count > 0 && !RoomCre && ONLINE)
+        string[] split = r.Name.Split(' '); //split[0]:Name , split[1]:盤面の大きさ（縦）,split[2]:盤面の大きさ（横） 
+        GameObject obj = GameObject.Find(split[0]);
+
+        //すでに存在していたのなら情報の更新
+        if (obj)
         {
-            foreach (RoomInfo room in roomDispList) //Roomを1つずつ検索
-            {
-                for (int i = 0; i < Const.CO.Number; i++)
-                {
-                    if (RoomButton[i] == null && RoomSave < 0) //空いているところに検索したRoomへ入るButtonを制作
-                    {
-                        RoomSave = i;
-                        break;
-                    }
-                }
-                if (roomButtonList.Contains(room)) //すでにButoonが作られているなら作らなくてよい
-                {
-                    RoomSave = -1;
-                }
-                if (RoomSave != -1 && RoomButton[RoomSave] == null) //Buttonの制作
-                {
-                 
-                    roomButtonList.Add(room); //作られたButtonにつながっている部屋を保存
-
-                    Vector3 vec = new Vector3(-198 + (207 * (RoomSave / Const.CO.button_Ver)), 45 - (75 * (RoomSave % Const.CO.button_Ver)), 0);
-                    Quaternion rotation = new Quaternion(0, 0, 0, 0);
-                    Vector3 scale = new Vector3(2, 2, 2); //ボタンの大きさ(何倍か)
-                    //ボタンのサイズ
-                    int Width = 100;
-                    int Height = 20;
-
-                    RoomButton[RoomSave] = Instantiate(Roombutton); //インスタンスを生成
-                    RoomButton[RoomSave].transform.position = vec; //ボタンの位置
-                    RoomButton[RoomSave].transform.SetParent(GameObject.Find(Const.CO.RoomButtonParent).gameObject.transform, false);//ボタンの親を設定
-                    RoomButton[RoomSave].transform.GetChild(textName).gameObject.GetComponent<TextMeshProUGUI>().text = room.Name; //ボタンのテキストを設定
-                    RoomButton[RoomSave].name = Const.CO.RoomNameName; //ボタンオブジェクトの名前を設定
-                    //ボタンのサイズ
-                    var rtf = RoomButton[RoomSave].GetComponent<RectTransform>();
-                    rtf.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Width);// 横方向のサイズ
-                    rtf.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Height);// 縦方向のサイズ
-                    //ボタンの大きさ
-                    RoomButton[RoomSave].transform.localScale = scale;
-                    //ボタンのアクションの設定
-                    RoomButton[RoomSave].GetComponent<Button>().onClick.AddListener(btn.RoomEnterButton);
-                }
-
-            }
+            roomButton = obj;
+            RoomInfoUpdate(obj, r,split);
         }
-
-        if (roomDispList.Count != roomButtonList.Count) //作ったボタンと部屋の数が合わない時(作ったボタンの方が多いとき)
+        //新しく作られたルームならばボタンの作成
+        else
         {
-            foreach (RoomInfo room in roomButtonList)
-            {
-                if (!roomDispList.Contains(room)) //ボタンを押したときに入る部屋が存在しない時
-                {
-                    for(int i = 0;i < Const.CO.Number ; i++)
-                    {
-                        if(RoomButton[i] != null)
-                        {
-                            //押したときに入る部屋が存在しないボタンを探す
-                            if (RoomButton[i].transform.GetChild(textName).gameObject.GetComponent<TextMeshProUGUI>().text == room.Name)
-                            {
-                                Destroy(RoomButton[i]); //ボタンを削除
-                                RoomButton[i] = null;
-                                break;
-                            }
-                        }
-                    }
+            roomButton = (GameObject)Instantiate(Roombutton);
+            roomButton.transform.SetParent(GameObject.Find(Const.CO.RoomButtonParent).gameObject.transform, false);
 
-                    DeleteRoom_button = room; //Butotnが削除されたことをメモ
-                    break;
-                }
-            }
+            //ボタンのアクションの設定
+            roomButton.GetComponent<Button>().onClick.AddListener(() => btn.RoomEnterButton(r.Name));
+            RoomInfoUpdate(roomButton, r,split);
+            //生成したボタンの名前を作成するルームの名前にする
+
+            roomButton.name = split[0];
+            roomButton.GetComponentsInChildren<TextMeshProUGUI>()[1].text = split[1] + " * " + split[2];
+
+            roomButtonList.Add(roomButton);
         }
-        
-        if (RoomCre || !ONLINE) //自身がRoomを制作しているとき
-        { //制作したButtonをすべて削除
-            roomButtonList.Clear();
 
-            for(int i = 0;i < Const.CO.Number; i++)
-            {
-                if(RoomButton[i] != null)
-                {
-                    Destroy(RoomButton[i]);
-                    RoomButton[i] = null;
-                }
-            }
-            System.Array.Clear(RoomButton, 0, RoomButton.Length);
-
-        }
-        
-        roomButtonList.Remove(DeleteRoom_button);
-        
+        RoomButtonPosition(roomButton);  //ルームボタンの配置の更新
         
     }
 
+    //ルームボタンの削除
+    public void RoomButtonDelete(RoomInfo r)
+    {
+        string[] split = r.Name.Split(' '); //split[0]:Name , split[1]:盤面の大きさ（縦）,split[2]:盤面の大きさ（横）
+        GameObject obj = GameObject.Find(split[0]);
+        //ボタンが存在すれば削除
+        if (obj)
+        {
+            GameObject.Destroy(obj);
+            roomButtonList.Remove(obj);
+        }
+        foreach(GameObject button_obj in roomButtonList){
+            RoomButtonPosition(button_obj);
+        }
+    }
+
+    //ルームボタンのInfoの更新
+    public void RoomInfoUpdate(GameObject button, RoomInfo info,string[] split)
+    {
+        foreach (TextMeshProUGUI t in button.GetComponentsInChildren<TextMeshProUGUI>())
+        {
+            if (t.name == "RoomName")
+            {
+                t.text = split[0];
+            }
+            else if (t.name == "MaxPlayerCount")
+            {
+                t.text = info.MaxPlayers.ToString();
+            }
+            else if (t.name == "RoomInPlayerCount")
+            {
+                t.text = info.PlayerCount.ToString();
+            }else if (t.name == "BoardSizeText")
+            {
+
+            }
+        }
+    }
+
+    //ルームボタンの配置の更新
+    public void RoomButtonPosition(GameObject roomButton)
+    {
+        Vector3 vec = Vector3.zero;
+
+        for (int i = 0; i < roomButtonList.Count; i++)
+        {
+            bool hit = false;
+
+            vec = new Vector3(-235 + (447 * (i % Const.CO.button_Side)), 66 - (110 * (i / Const.CO.button_Side)), 0);
+            for(int j = 0; j < roomButtonList.Count; j++)
+            {
+                if (vec == roomButtonList[j].transform.localPosition)
+                {
+                    hit = true;
+                    break;
+                }
+            }
+            if (!hit) break;
+        }
+            Quaternion rotation = new Quaternion(0, 0, 0, 0);
+            Vector3 scale = new Vector3(1, 1, 1); //ボタンの大きさ(何倍か)
+                                                  //ボタンのサイズ
+            int Width = 426;
+            int Height = 90;
+
+            roomButton.transform.localPosition = vec; //ボタンの位置
+            //ボタンの大きさ
+            roomButton.transform.localScale = scale;
+            //ボタンのサイズ
+            var rtf = roomButton.GetComponent<RectTransform>();
+            rtf.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Width);// 横方向のサイズ
+            rtf.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Height);// 縦方向のサイズ
+        
+    }
 
     //ロビーに入りなおす
     public void UpdataButtonOnClick()
     {
-        Updata = false;
         // ロビーに入り直す
         roomDispList = new List<RoomInfo>();
+        roomButtonList = new List<GameObject>();
         PhotonNetwork.LeaveLobby();
         PhotonNetwork.JoinLobby();
     }
 
     // Photonサーバ接続処理
-    public void ConnectPhoton(bool boolOffline)
+    public void ConnectPhoton(bool boolOnline)
     {
-        if (boolOffline)
+        if (!boolOnline)
         {
             // オフラインモードを設定
             mode = Status.OFFLINE.ToString();
@@ -296,7 +327,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             PhotonNetwork.OfflineMode = true; // OnConnectedToMaster()が呼ばれる
             dispMessage = "OFFLINEモードで起動しました。";
             SceneManager.LoadScene(Const.CO.MattixSceneName);
-            //PhotonNetwork.LoadLevel(GameScene);
             return;
         }
         // Photonサーバに接続する
@@ -308,24 +338,25 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     // Photonサーバ切断処理
     public void DisConnectPhoton()
     {
-        Updata = true;
         Room = false;
         ONLINE = false;
         RoomCre = false;
         roomDispList.Clear();
-        //roomDispList.Remove(PhotonNetwork.CurrentRoom);
         PhotonNetwork.Disconnect();
     }
 
     // コールバック：Photonサーバ接続完了
     public override void OnConnectedToMaster()
     {
-
+        ready = false; //対戦準備ができていない
         base.OnConnectedToMaster();
         if (Status.ONLINE.ToString().Equals(mode))
         {
+            //initParam();
             dispStatus = Status.ONLINE.ToString();
-            dispMessage = "サーバに接続しました。";
+            Room = false;
+            if (dispMessage == "") dispMessage = "サーバに接続しました。";
+            else if(dispMessage != "ルームに入室していないのでルームからの退出はできません") dispMessage = "ルームから退出しました";
             ONLINE = true;
             // ロビーに接続
             PhotonNetwork.JoinLobby();
@@ -345,9 +376,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnJoinedLobby()
     {
         base.OnJoinedLobby();
-        if (Updata)
+        if (ReEntry)
         {
-            UpdataButtonOnClick();
+            ReEntry = false;
+            ConnectToRoom(dispRoomName);
         }
     }
 
@@ -355,20 +387,21 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         base.OnRoomListUpdate(roomList);
-        
-        // ルーム一覧更新
-        foreach (var info in roomList)
+        roomDispList = roomList;
+        int number = 0;
+
+        foreach (RoomInfo r in roomList)
         {
-            if (!info.RemovedFromList)
+            //プレイヤーが存在しているルーム
+            if (r.PlayerCount > 0)
             {
-                // 更新データが削除でない場合
-                roomDispList.Add(info);
+                RoomButtonCreate(r);
             }
             else
             {
-                // 更新データが削除の場合
-                roomDispList.Remove(info);
+                RoomButtonDelete(r);
             }
+            number++;
         }
     }
 
@@ -377,24 +410,44 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     {
         if (Room == false)
         {
+            BoardSize = OSC_Script.Size;
+            string name = roomName + " " + BoardSize + " " + BoardSize;
             RoomCre = true;
             Room = true;
-            dispRoomName = roomName;
-            PhotonNetwork.JoinOrCreateRoom(roomName, RoomOPS, TypedLobby.Default);
+            dispRoomName = name;
+            PhotonNetwork.JoinOrCreateRoom(name, RoomOPS, TypedLobby.Default);
         }
     }
 
     // ルーム入室処理
     public void ConnectToRoom(string roomName)
     {
-        if (Room == false)
+        dispRoomName = roomName;
+        if (Room)
         {
-            Room = true;
+            PhotonNetwork.LeaveRoom();
+            Room = false;
+            ReEntry = true;
+            
+        }
+        else
+        {
             PhotonNetwork.JoinRoom(roomName);
         }
-
     }
 
+    //ルーム退出処理
+    public void Disconnect()
+    {
+        if (Room)
+        {
+            PhotonNetwork.LeaveRoom();
+        }
+        else
+        {
+            dispMessage = "ルームに入室していないのでルームからの退出はできません";
+        }
+    }
     // コールバック：ルーム作成完了
     public override void OnCreatedRoom()
     {
@@ -413,23 +466,29 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         base.OnJoinedRoom();
+        Room = true;
         // 表示ルームリストに追加する
         roomDispList.Add(PhotonNetwork.CurrentRoom);
         DisplayJoinedRoom();
     }
-
+    // コールバック：ルーム入室に失敗した時
+    public override void OnJoinRoomFailed(short returnCode, string message)
+    {
+        dispMessage = "ルーム入室に失敗しました:"+message;
+    }
     //入った部屋と入っているプレイヤーを表示
     public void DisplayJoinedRoom()
     {
         participants = PhotonNetwork.PlayerList.Length; //参加人数
+        string[] split = PhotonNetwork.CurrentRoom.Name.Split(' ');
 
-        dispMessage = "【" + PhotonNetwork.CurrentRoom.Name + "】" + "に入室しました。\n";
+        dispMessage = "【" + split[0] +"   "+split[1]+"×"+ split[2] + "】" + "に入室しました\n";
         foreach (var p in PhotonNetwork.PlayerList)
         {
             dispMessage += p.NickName + "\n";
         }
         dispMessage += "参加人数" + participants + "人";
-
+        
     }
 
     //GameStart処理
@@ -438,7 +497,16 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         //部屋に2人入っている時
         if (PhotonNetwork.PlayerList.Length == 2)
         {
-            photonView.RPC(nameof(RpcGameStart), RpcTarget.All);
+            dispMessage = "対戦相手の行動を待っています";
+            foreach (var p in PhotonNetwork.PlayerListOthers)
+            {
+                OpponentName = p.NickName;
+                dispMessage += "\n"+OpponentName + ":準備中";
+            }
+            ready = true;
+            PhotonNetwork.IsMessageQueueRunning = false;
+            photonView.RPC(nameof(RpcReadyGame), RpcTarget.Others);
+            PhotonNetwork.IsMessageQueueRunning = true;
         }
         //部屋に0人入っている時（自分も入っていない）
         else if(PhotonNetwork.PlayerList.Length == 0)
@@ -457,9 +525,19 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     }
 
     [PunRPC] //ゲームが開始される時に呼び出す関数
+    private void RpcReadyGame()
+    {
+        if (ready)
+        {
+            photonView.RPC(nameof(RpcGameStart), RpcTarget.All);
+        }
+    }
+
+    [PunRPC] //ゲームが開始される時に呼び出す関数
     private void RpcGameStart()
     {
-        SceneManager.LoadScene(Const.CO.MattixSceneName);
+        PhotonNetwork.LoadLevel(Const.CO.MattixSceneName);
+
     }
    
 
