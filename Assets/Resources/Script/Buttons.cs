@@ -301,6 +301,7 @@ public class Buttons : MonoBehaviour
         //ネットに繋がっていたら切断する
         if (PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode)
         {
+            UnityEngine.Debug.Log("in");
             DisConnectPhoton();
         }
         else
@@ -524,6 +525,7 @@ public class Buttons : MonoBehaviour
         {
             PM_ScriptCreate();
             PM_Script.SetMessage("");
+            PM_Script.DisConnectPhoton();
             SceneManager.LoadScene(Const.CO.TitleSceneName);
         }
         else if (SceneManager.GetActiveScene().name == Const.CO.MattixSceneName)
