@@ -37,7 +37,7 @@ public class PointPieceScript : MonoBehaviourPunCallbacks
         }
     }
 
-    public void ChangeGetPosition(string Player,int stoneX)
+    public void ChangeGetPosition(string Player,int stoneX,Vector3 vec)
     {
         if (!PhotonNetwork.OfflineMode)
         {
@@ -46,7 +46,10 @@ public class PointPieceScript : MonoBehaviourPunCallbacks
         else
         {
             GameObject canvas = this.gameObject.transform.parent.gameObject;
-            this.gameObject.transform.position = canvas.transform.Find("Player"+Player + "/Cube"+Player+"/Plane" + stoneX).gameObject.transform.position;
+            
+            //this.gameObject.transform.SetParent(canvas.transform.Find("Player" + Player + "/Cube" + Player).gameObject.transform, false);
+            this.gameObject.transform.localPosition = vec;
+            
         }
 
     }
