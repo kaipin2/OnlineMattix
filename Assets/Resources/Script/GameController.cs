@@ -934,6 +934,10 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         GameObject score_object = null; //取った石の合計得点を記載するテキストを持つObject
         TextMeshProUGUI score_text = null; //取った石の合計得点を記載するテキスト
         string name = "Score"; //得点の前につけるテキスト
+        Vector3 vec = new Vector3(530f, 214.5f, -80.0299f); //取った駒を配置する位置
+        Quaternion rotation = new Quaternion(0, 0, 0, 0);
+        //Vector3 scale = new Vector3(0.04452032f, 100f, 0.01300387f); //取った駒を配置する大きさ
+        int row = 3; //この数字ずつ並べる
 
         //先手の手番の時
         if (currentPlayer == Const.CO.SIDE)
@@ -960,9 +964,12 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
             Score = ScoreB; //後手の得点
             score_object = scoreB_object; //後手の得点を記載するテキストを持つObject
             score_text = scoreB_text; //後手の得点を記載するテキスト
+            vec = new Vector3(-770f, 214.5f, -80.0299f); //取った駒を配置する位置
             //ONLINEの時、名前を取得
             if (ONLINE) name = PhotonNetwork.PlayerList[1].NickName;
         }
+
+        vec = vec + new Vector3((float)((stoneX % row) * 100), (float)((stoneX / row) * -80), 0);
         #endregion
 
         #region デバッグ用
@@ -996,7 +1003,9 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
             mainX = x; //スタート駒のx座標を更新
             mainY = y; //スタート駒のy座標を更新
             //取った駒の位置を更新
-            GetPiece[stoneX].GetComponent<PointPieceScript>().ChangeGetPosition(Player, stoneX);
+            GetPiece[stoneX].GetComponent<PointPieceScript>().ChangeGetPosition(Player, stoneX,vec);
+            //GetPiece[stoneX].transform.rotation = rotation;
+            //GetPiece[stoneX].transform.localScale = GetPiece[stoneX].transform.Scale;
             stoneX++; //取った駒の枚数の更新
             //得点のテキストの更新
             score_object.GetComponent<TextScript>().ChangeText(name + ":" + Score);
