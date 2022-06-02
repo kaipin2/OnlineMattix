@@ -4,8 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro; //TextMeshProを使用するのに必要
 using UnityEngine.UI; //UIを使用するのに必要
+using UnityEngine.SceneManagement;
+using Photon.Pun;
+using Photon.Realtime;
 
-public class TitleController : MonoBehaviour
+
+public class TitleController : MonoBehaviourPunCallbacks//MonoBehaviour
 {
     private Buttons btn; //ボタンのスクリプト
     private GameObject VersionObject;//ゲームのバージョンを示すテキストが存在するObject
@@ -13,14 +17,16 @@ public class TitleController : MonoBehaviour
 
     private GameObject TitleCanvasObject; //Title画面のCanvasの場所
     private GameObject OptionCanvasObject; //Option画面のCanvasの場所
-
     private GameObject AudioObject; //Audioのオブジェクト
     private SoundPresenter SoundP; //SoundPresenterのスクリプト
     private Canvas Audio; //AudioCanvas
     private Canvas Canvas; //MainCanvas
 
+    private OptionStatusController PW_Script;
+
     private TextMeshProUGUI TitleText; //TitleのText
     private TextMeshProUGUI OptionText; //OptionのText
+    private TMP_Dropdown ddtmp = null;
 
     private static int ButtonNumber = 4; // Title画面にあるボタンの数
     public GameObject Button; //Title画面にあるボタン(Unity内で設定)
@@ -71,6 +77,10 @@ public class TitleController : MonoBehaviour
         //Audioのあるオブジェクトを取得
         AudioObject = OptionCanvasObject.transform.parent.gameObject;
 
+        ddtmp = GameObject.Find(Const.CO.DropdownName).GetComponent<TMP_Dropdown>();
+        PW_Script = OptionCanvasObject.GetComponent<OptionStatusController>();
+        PW_Script.Size = int.Parse(ddtmp.options[ddtmp.value].text);
+
         //Canvasのcomponentを取得
         TitleCanvas = TitleCanvasObject.GetComponent<Canvas>();
         AudioCanvas = OptionCanvasObject.GetComponent<Canvas>();
@@ -105,7 +115,7 @@ public class TitleController : MonoBehaviour
 
     void SetButton()
     {
-        Vector3 ButtonPosition = new Vector3(-242, 162, 0); //Buttonの位置
+        Vector3 ButtonPosition = new Vector3(-580, 130, 0); //Buttonの位置
         Vector3 ButtonScale = new Vector3(3, 3, 3); //Buttonの大きさ
         Vector3 ButtonInterval = new Vector3(0, -135,0); //Button間の間隔
         int Width = 160;
@@ -159,4 +169,16 @@ public class TitleController : MonoBehaviour
         SetButton.Select();
         */
     }
+    
+    public void ConnectPhoton(bool boolOffline)
+    {
+        if (boolOffline)
+        {
+            PhotonNetwork.OfflineMode = true; // OnConnectedToMaster()が呼ばれる
+            SceneManager.LoadScene(Const.CO.MattixSceneName);
+            //PhotonNetwork.LoadLevel(GameScene);
+            return;
+        }
+    }
+    
 }

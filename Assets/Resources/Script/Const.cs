@@ -10,6 +10,8 @@ namespace Const
 {
     public static class CO
     {
+        public static string GameVersion = "Ver 1.2.1"; //ゲームバージョン指定（設定しないと警告が出る）
+
         //主にボタンで使用する変数
         public static string AudioObjectName = "Audio"; //AudioManagerがComponentされているGameobjectの名称
         public static string MainObjectName = "TitleController"; //Title画面のTitleContoroller.csが格納されているObjectの名称
@@ -94,8 +96,8 @@ namespace Const
         public static int PointNumber = 1;
         public static int InsideNumber = 2;
         //ゲーム番の大きさ
-        public static int Ver = 6; //縦
-        public static int Si = 6; //横
+        //public static int Ver = 6; //縦
+        //public static int Si = 6; //横
         //駒の点数の上限と下限
         public static int Max = 10; //上限
         public static int Min = -10; //下限
@@ -111,13 +113,23 @@ namespace Const
 
         //主にPhotonManagerで使用する変数
         public static int button_Ver = 3; //ボタンの並び(縦の個数)
-        public static int button_Side = 3; //ボタンの並び(横の個数)
+        public static int button_Side = 2; //ボタンの並び(横の個数)
         public static int Number = button_Ver * button_Side; //ルームの最大制作可能個数
         public static string RoomButtonParent = "PhotonCanvas/Room";//ルームボタンの位置のURL
         public static string StatusTextName = "Title";
         public static string MessageTextName = "Message";
         public static string LobbyTitle = "ロビー";
-        public static string GameVersion = "Ver 1.1.0"; //ゲームバージョン指定（設定しないと警告が出る）
+
+
+        //public static string OptionCanvasName = "Option";
+        public static string PopUpWindowName = "Popup";
+        public static string DropdownName = "Dropdown";
+
+        public static string RoomListURL = "Room/RoomList";
+
+        public static string RoomButtonTag = "RoomButton";
+        //盤面の最大の大きさ
+        public static int MaxScale = 750;
 
     }
 }

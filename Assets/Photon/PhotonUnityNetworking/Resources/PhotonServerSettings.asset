@@ -53,6 +53,10 @@ MonoBehaviour:
   - RpcSE
   - RpcSetAction
   - RpcSetParent
+  - RpcTimeUpdate
+  - RpcReadyGame
+  - RpcGameBoard
+  - RpcRoomButton
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
