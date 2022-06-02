@@ -7,6 +7,7 @@ using TMPro; //TextMeshProを使用するのに必要
 using UnityEngine.SceneManagement;
 using Photon.Pun;
 using Photon.Realtime;
+//using UnityEditor;
 
 using Const; //定数を定義している
 
@@ -24,23 +25,27 @@ public class Buttons : MonoBehaviour
     private static bool OFFLINE = false;
     #endregion
 
-    #region Proteceted変数定義
-    protected AudioManager VCscript = null; //「AudioManager」のComponentを格納する
-    protected TitleController TC_Script = null; //「TitleContoroller」のComponentを格納する
-    protected LobbyController LC_Script = null; //「LobbyContoroller」のComponentを格納する
-    protected PhotonManager PM_Script = null; //「PhotonManager」のComponentを格納する
-    protected GameController GC_Script = null; //「GameController」のComponentを格納する
-    protected ExplanationController EC_Script = null; //「ExplanationController」のComponentを格納する
+    #region Public変数定義
+    public AudioManager VCscript = null; //「AudioManager」のComponentを格納する
+    public TitleController TC_Script = null; //「TitleContoroller」のComponentを格納する
+    public LobbyController LC_Script = null; //「LobbyContoroller」のComponentを格納する
+    public PhotonManager PM_Script = null; //「PhotonManager」のComponentを格納する
+    public GameController GC_Script = null; //「GameController」のComponentを格納する
+    public ExplanationController EC_Script = null; //「ExplanationController」のComponentを格納する
+    public OptionStatusController PW_Script = null; //「PopupWindow」のComponentを格納する
 
-    protected GameObject MainObject = null; //「TitleContoroller」を格納するObject
-    protected GameObject LobbyObject = null; //「LobbyContoroller」を格納するObject
-    protected GameObject PhotonManagerObject = null; //「PhotonManager」を格納するObject
-    protected GameObject GameControllerObject = null; //「GameController」を格納するObject
-    protected GameObject ExplanationControllerObject = null; //「ExplanationController」を格納するObject
-    protected GameObject ConfirmationWindowsObject = null; //「ConfirmationWindows」を格納するObject
+    public GameObject MainObject = null; //「TitleContoroller」を格納するObject
+    public GameObject LobbyObject = null; //「LobbyContoroller」を格納するObject
+    public GameObject PhotonManagerObject = null; //「PhotonManager」を格納するObject
+    public GameObject GameControllerObject = null; //「GameController」を格納するObject
+    public GameObject ExplanationControllerObject = null; //「ExplanationController」を格納するObject
+    public GameObject ConfirmationWindowsObject = null; //「ConfirmationWindows」を格納するObject
+    public GameObject OptionStatusControllerObject = null; //「OptionStatusController」を格納するObject
 
-    protected List<GameObject> ButtonSetObject = new List<GameObject>();//ButtonのComponentが格納されているObjectを格納する集合
-    protected List<Button> ButtonSet = new List<Button>();//ButtonのComponent集合
+    public List<GameObject> ButtonSetObject = new List<GameObject>();//ButtonのComponentが格納されているObjectを格納する集合
+    public List<Button> ButtonSet = new List<Button>();//ButtonのComponent集合
+
+    
     #endregion
 
     // はじめに呼び出される
@@ -162,6 +167,26 @@ public class Buttons : MonoBehaviour
             EC_Script = ExplanationControllerObject.GetComponent<ExplanationController>();
         }
     }
+
+    //PopupWindowのComponentを作成
+    public void PW_ScriptCreate()
+    {
+        if (OptionStatusControllerObject == null)
+        {
+            if (GameObject.Find(Const.CO.AudioCanvasName) != null)
+            {
+                OptionStatusControllerObject = GameObject.Find(Const.CO.AudioCanvasName).gameObject;
+            }
+            else
+            {
+                return;
+            }
+        }
+        if (PW_Script == null)
+        {
+            PW_Script = OptionStatusControllerObject.GetComponent<OptionStatusController>();
+        }
+    }
     #endregion
 
     #region ボタンが押されたときの関数(protected関数)
@@ -185,31 +210,14 @@ public class Buttons : MonoBehaviour
         OnClick(); //ボタンを押したときの音を鳴らす
         Enabled(OptionNumber);
     }
-    /*
-    public void CreateRoomButton()
+    public void RoomEnterButton(string text)
     {
-        GameObject childTextObject;
-        TextMeshProUGUI RoomNameText;
-
-        TC_ScriptCreate();//TitleContorollerのComponentを制作
-        PM_ScriptCreate();//PhotonManagerのComponentを制作
-
-        childTextObject = this.gameObject.transform.Find(Const.CO.RoomNameName).gameObject;
-        RoomNameText = childTextObject.GetComponent<TextMeshProUGUI>();
-        PM_Script.CreateRoom(RoomNameText.text);
-    }
-    */
-    public void RoomEnterButton()
-    {
-        GameObject childTextObject;
-        TextMeshProUGUI RoomNameText;
         
+
         PM_ScriptCreate();//PhotonManagerのComponentを制作
         OnClick(); //ボタンを押したときの音を鳴らす
 
-        childTextObject = GameObject.Find(Const.CO.RoomNameName).transform.GetChild(0).gameObject;//this.gameObject.transform.Find(Const.CO.RoomNameName).gameObject;
-        RoomNameText = childTextObject.GetComponent<TextMeshProUGUI>();
-        PM_Script.ConnectToRoom(RoomNameText.text);
+        PM_Script.ConnectToRoom(text);
     }
     public void OptionButton()
     {
@@ -293,29 +301,23 @@ public class Buttons : MonoBehaviour
         //ネットに繋がっていたら切断する
         if (PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode)
         {
-            DisConnectPhoton();
-        }
-
-        SceneManager.LoadScene(Const.CO.TitleSceneName);
-    }
-    public void DisconnectButton()
-    {
-        PM_ScriptCreate();//PhotonManagerのComponentを制作
-        string[] str; //非表示にするボタンの名前
-
-        if (PM_Script.dispStatus == "ONLINE")
-        {
-            str = new string[] { Const.CO.DisconnectName, Const.CO.PlayerNameFieldName, Const.CO.RoomNameFieldName, Const.CO.EntertheRoomName, Const.CO.UpdateButtonName, Const.CO.GameStartName };
-            OnClick();//ボタンを押したときの音を鳴らす
-            ButtonEnabled(str); //ボタンを非表示にする
-            ButtonActive(Const.CO.ONLINEButtonName); //ONLINEButtonを表示
-            //ButtonActive(OFFLINEButtonName); //OFFLINEButtonを表示
-
+            UnityEngine.Debug.Log("in");
             DisConnectPhoton();
         }
         else
         {
-            str = new string[] { Const.CO.DisconnectName };
+            SceneManager.LoadScene(Const.CO.TitleSceneName);
+        }
+        
+    }
+    public void DisconnectButton()
+    {
+        OnClick();
+        PM_ScriptCreate();//PhotonManagerのComponentを制作
+
+        if (PM_Script.dispStatus == "ONLINE")
+        {
+            PM_Script.Disconnect();
         }
 
     }
@@ -341,7 +343,7 @@ public class Buttons : MonoBehaviour
         TMP_InputField RoomNameText;
         OnClick(); //ボタンを押したときの音を鳴らす
         PM_ScriptCreate();//PhotonManagerのComponentを制作
-        if (PM_Script.ONLINE)
+        if (PhotonNetwork.IsConnected)
         {
             RoomTextObject = GameObject.Find(Const.CO.RoomNameFieldName).gameObject;
             RoomNameText = RoomTextObject.GetComponent<TMP_InputField>();
@@ -353,7 +355,10 @@ public class Buttons : MonoBehaviour
             {
                 PM_Script.RoomCreate(RoomNameText.text);
             }
-
+        }
+        else
+        {
+            PM_Script.SetMessage("ONLINE状態でないため、ルームを制作することができません");
         }
     }
     public void PageFeedButton()
@@ -367,6 +372,14 @@ public class Buttons : MonoBehaviour
         OnClick(); //ボタンを押したときの音を鳴らす
         PM_ScriptCreate();//PhotonManagerのComponentを制作
         PM_Script.UpdataButtonOnClick();
+    }
+    public void RetireButton()
+    {
+        OnClick(); //ボタンを押したときの音を鳴らす
+        OptionNumber = 1;
+        Enabled(OptionNumber);
+        GC_ScriptCreate();
+        GC_Script.DisConnectPhoton();
     }
     #endregion
     //画面を表示、非表示を変更する(Title ⇔ Option ⇔ Photon)
@@ -493,15 +506,33 @@ public class Buttons : MonoBehaviour
     //OFFLINEかONLINEでNetWorkに接続
     public void PhotonConent(bool OFFLINE)
     {
-        PM_ScriptCreate();
-        PM_Script.ConnectPhoton(OFFLINE);
+        if (OFFLINE)
+        {
+            TC_ScriptCreate();
+            TC_Script.ConnectPhoton(OFFLINE);
+        }
+        else
+        {
+            PM_ScriptCreate();
+            PM_Script.ConnectPhoton(OFFLINE);
+        }
     }
 
     //NetWork切断
     public void DisConnectPhoton()
     {
-        PM_ScriptCreate();
-        PM_Script.DisConnectPhoton();
+        if (SceneManager.GetActiveScene().name == Const.CO.LobbySceneName)
+        {
+            PM_ScriptCreate();
+            PM_Script.SetMessage("");
+            PM_Script.DisConnectPhoton();
+            SceneManager.LoadScene(Const.CO.TitleSceneName);
+        }
+        else if (SceneManager.GetActiveScene().name == Const.CO.MattixSceneName)
+        {
+            PW_ScriptCreate();
+            PW_Script.Popup.SetActive(true);
+        }
     }
 
     //シーンが存在するか確かめる

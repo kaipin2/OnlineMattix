@@ -42,10 +42,14 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
      * を「currentPlayer」に入れる
      */
 
+    //盤面の大きさ
+    private int Ver;
+    private int Si;
+
     //ゲームがOFFLINEかONLINEか判断(ture:ONLINE,false:OFFLINE)
     private bool ONLINE = false;
     //盤面に置いてある駒をint型2次元配列を定義(スタート駒:MAIN,数字の駒:その値,空白:EMPTY)
-    private int[,] squares = new int[Const.CO.Si, Const.CO.Ver];
+    private int[,] squares;
     //現在のプレイヤー(初期プレイヤーは横(SIDE))
     private int currentPlayer = Const.CO.SIDE;
     //自分の手番かどうか(ture:自分の手番,false:相手の手番)
@@ -54,7 +58,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     private int mainX = -1;
     private int mainY = -1;
     //盤上に置いてある駒をGameObject型２次元配列で定義
-    private GameObject[,] Piece = new GameObject[Const.CO.Si, Const.CO.Ver];
+    private GameObject[,] Piece;
     //石の取った枚数(A:先手,B:後手)
     private int stoneA = 0;
     private int stoneB = 0;
@@ -62,8 +66,8 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     private int ScoreA = 0;
     private int ScoreB = 0;
     //取った石をGameObject型の配列で保存(GetPieceA:先手,GetPieceB:後手)
-    private GameObject[] GetPieceA = new GameObject[Const.CO.Si * Const.CO.Ver / 2];
-    private GameObject[] GetPieceB = new GameObject[Const.CO.Si * Const.CO.Ver / 2];
+    private GameObject[] GetPieceA;
+    private GameObject[] GetPieceB;
     //取った石の合計得点を記載するテキスト(A:先手,B:後手)
     private TextMeshProUGUI scoreA_text;
     private TextMeshProUGUI scoreB_text;
@@ -80,11 +84,11 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     //Resources/Audio/SEの中で「MovingSound」が何番目に入っているか(0から数えて)
     private static int MovingSound = 1;
     //盤上に置いてある駒の点数表示をするObjectを配列で定義
-    private GameObject[] Point = new GameObject[Const.CO.Si * Const.CO.Ver];
+    private GameObject[] Point;
     //盤上に置いてある駒の点数表示をするテキストを配列で定義
     private TextMeshProUGUI[] PointText;
     //盤面をGameobject型の２次元配列で定義
-    private GameObject[] Board = new GameObject[Const.CO.Si * Const.CO.Ver];
+    private GameObject[] Board;
     //オブジェクト(ゲーム盤)の名前を分割する
     private static char[] separetechar1 = Const.CO.BoardName.ToCharArray();
     private static char[] separetechar2 = Const.CO.BoardName_Connect.ToCharArray();
@@ -95,6 +99,10 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     private GameObject VolumeManager;
     //音量を設定するスクリプト
     private AudioManager VCscript;
+
+    //盤面の大きさを指定しているObjectのスクリプト
+    private OptionStatusController PW_Script;
+
     //canvasのComponent
     private Canvas Maincanvas; //メイン画面のCanvasのComponent
     private Canvas Subcanvas; //(ゲーム終了後の)追加画面のCanvasのComponent
@@ -119,6 +127,61 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     private Canvas Audio; //AudioCanvas
 
     private Buttons btn; //ボタンのスクリプト
+    #endregion
+
+    #region PrivateAccessor定義
+    private int TimeCount
+    {
+        get {
+            if (currentPlayer == Const.CO.SIDE)
+            {
+                return time_A;
+            }else if (currentPlayer == Const.CO.VERTICAL)
+            {
+                return time_B;
+            }
+            return -1;//エラー
+        }
+        set {
+            if (currentPlayer == Const.CO.SIDE)
+            {
+                time_A = value;
+            }
+            else if (currentPlayer == Const.CO.VERTICAL)
+            {
+                time_B = value;
+            }
+            
+        }
+    }
+    private TextMeshProUGUI TimeText
+    {
+        get
+        {
+            if (currentPlayer == Const.CO.SIDE)
+            {
+                return timeA_text;
+            }
+            else if (currentPlayer == Const.CO.VERTICAL)
+            {
+                return timeB_text;
+            }
+            return null;//エラー
+        }
+        set
+        {
+            if (currentPlayer == Const.CO.SIDE)
+            {
+                timeA_text = value;
+            }
+            else if (currentPlayer == Const.CO.VERTICAL)
+            {
+                timeB_text = value;
+            }
+
+        }
+    }
+
     #endregion
 
     #region Public変数定義
@@ -179,6 +242,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         get { return ONLINE; }
         set { ONLINE = value; }
     }
+
     #endregion
 
     #region Private関数
@@ -245,34 +309,21 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
 
         if (!finish)
         {
-            
-            //ONLINEの時
-            if (ONLINE)
+            if (PhotonNetwork.IsMasterClient)
             {
-                //photonView.RPC(nameof(RpcCurrentPlayer), RpcTarget.All,currentPlayer);
-                TimeCount();
+                TimeManager();
             }
-            else
-            {
-                TimeCount();
-            }
-            
-            
-            //Optionの表示(「P」を押すと表示)
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                //音量画面(Option画面)を表示
-                CanvasDisplay(2);
-            }
-
+           
             //ONLINEで参加人数が２人未満(途中で相手が落ちたとき)はタイトルに戻る
             if (ONLINE) //ONLINEの時
             {
+
                 //参加人数が２人未満(途中で相手が落ちたとき)
                 if (PhotonNetwork.PlayerList.Length < 2)
                 {
                     //PhotonNetwork.Disconnect(); //NetWorkを切断
-                    PhotonNetwork.LoadLevel(Const.CO.LobbySceneName); //タイトルに戻る
+                    //PhotonNetwork.LoadLevel(Const.CO.LobbySceneName); //タイトルに戻る
+                    SceneManager.LoadScene(Const.CO.LobbySceneName); //タイトルに戻る
                 }
             }
 
@@ -346,8 +397,6 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         VCscript.PlayBGM(0);
 
 
-        //駒のポイントを表示するテキスト
-        PointText = new TextMeshProUGUI[Const.CO.Si * Const.CO.Ver];
 
         //スコア情報を表示するテキスト(A:先手,B:後手)
         scoreA_text = scoreA_object.GetComponent<TextMeshProUGUI>();
@@ -373,45 +422,62 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         //効果音を操作するスクリプトを取得
         audioSource = GetComponent<AudioSource>();
 
+        //盤面の大きさを決定する
+        PW_Script = GameObject.Find(Const.CO.AudioCanvasName).GetComponent<OptionStatusController>();
+        SetBoardSize(PW_Script.Size, PW_Script.Size);
+
+        //盤面の大きさを使用した変数を定義
+        squares = new int[Si, Ver];
+        Piece = new GameObject[Si, Ver];
+        GetPieceA = new GameObject[Si * Ver / 2];
+        GetPieceB = new GameObject[Si * Ver / 2];
+        Point = new GameObject[Si * Ver];
+        Board = new GameObject[Si * Ver];
+        //駒のポイントを表示するテキスト
+        PointText = new TextMeshProUGUI[Si * Ver];
+
         //自分の手番かどうかを示す変数をfalseで初期化
         TurnPlayer = false;
         //RandomTurn(); //どちらが先手か決める関数
     }
 
+    //盤面の大きさをセットする関数
+    private void SetBoardSize(int ver,int si)
+    {
+        Ver = ver;
+        Si = si;
+    }
+
     //時間を管理する
-    private void TimeCount()
+    private void TimeManager()
     {
         seconds += Time.deltaTime;
         if ((int)seconds != (int)old_seconds)
         {
-            if (currentPlayer == Const.CO.SIDE)
-            {
-                time_A = time_A - 1;
-                int time_A_sec = (int)time_A % 60;
-                int time_A_min = (int)time_A / 60;
-                timeA_text.text = "TIME:" + time_A_min.ToString("00") + ":" + ((int)time_A_sec).ToString("00");
+            int time = TimeCount - 1;
+            TextMeshProUGUI time_text = TimeText;
+            int judge = currentPlayer == Const.CO.SIDE ? 1:2; //時間切れになる可能性があるのはどちらか(1:先手,2:後手)
 
-                if (time_A <= 0f)
-                {
-                    TimeUp = 1;
-                    Result();
-                }
+            int sec = (int)time % 60;
+            int min = (int)time / 60;
+            string str = "TIME:" + min.ToString("00") + ":" + ((int)sec).ToString("00");
+            if (ONLINE)
+            {
+                photonView.RPC(nameof(RpcTimeUpdate), RpcTarget.All, currentPlayer, str, time);
+            }
+            else
+            {
+                time_text.text = str;
             }
 
-            else if (currentPlayer == Const.CO.VERTICAL)
+            if (time <= 0f)
             {
-                time_B = time_B - 1;
-                int time_B_sec = (int)time_B % 60;
-                int time_B_min = (int)time_B / 60;
-                timeB_text.text = "TIME:" + time_B_min.ToString("00") + ":" + ((int)time_B_sec).ToString("00");
-
-                if (time_B <= 0f)
-                {
-                    TimeUp = 2;
-                    Result();
-                }
-
+                TimeUp = judge;
+                Result();
             }
+
+            TimeCount = time;
+            TimeText = time_text;
         }
         old_seconds = seconds;
     }
@@ -457,9 +523,9 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     private void InitializeArray()
     {
         //配列の初期化&盤上の状況を初期化
-        for (int y = 0; y < Const.CO.Ver; y++)
+        for (int y = 0; y < Ver; y++)
         {
-            for (int x = 0; x < Const.CO.Si; x++)
+            for (int x = 0; x < Si; x++)
             {
                 //配列を空(値は0)にする
                 squares[x, y] = Const.CO.EMPTY;
@@ -480,7 +546,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         stoneB = 0;
 
         //取った石の状況の初期化(A;先手,B:後手)
-        for (int i = 0; i < (Const.CO.Si * Const.CO.Ver / 2); i++)
+        for (int i = 0; i < (Si * Ver / 2); i++)
         {
             Destroy(GetPieceA[i]); //先手が取った駒があるなら消去
             Destroy(GetPieceB[i]); //後手が取った駒があるなら消去
@@ -496,16 +562,16 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     private void GenerateArray()
     {
         //mainの駒の配置をランダム配置
-        int MainPieceX = (int)UnityEngine.Random.Range(0.0f, (float)Const.CO.Si); //x座標
-        int MainPieceY = (int)UnityEngine.Random.Range(0.0f, (float)Const.CO.Ver); //y座標
+        int MainPieceX = (int)UnityEngine.Random.Range(0.0f, (float)Si); //x座標
+        int MainPieceY = (int)UnityEngine.Random.Range(0.0f, (float)Ver); //y座標
 
         //スタート駒の位置を設定(int値)
         squares[MainPieceX, MainPieceY] = Const.CO.MAIN;
 
         //for文を利用して配列アクセス(盤面の右下から順番になんの駒を置くか設定)
-        for (int y = 0; y < Const.CO.Ver; y++)
+        for (int y = 0; y < Ver; y++)
         {
-            for (int x = 0; x < Const.CO.Si; x++)
+            for (int x = 0; x < Si; x++)
             {
                 //何点の駒を置くか処理(0はmain駒)
                 int point = 0;
@@ -535,7 +601,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     {
         #region 変数定義
         //指定された盤面の位置
-        Vector3 tmps = Board[y * Const.CO.Si + x].transform.localPosition;
+        Vector3 tmps = Board[y * Si + x].transform.localPosition;
         //画面のz座標の位置
         float pre_z = -canvas.transform.position.z;
         //指定された盤面の位置(z座標を変更)
@@ -547,7 +613,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         //駒の回転方向(足し合わせ)
         Pre_rotation = Quaternion.AngleAxis(90, Vector3.right);
         //駒の大きさ
-        float piecescale = 60f;
+        float piecescale = (float)(Const.CO.MaxScale / Si);
         //駒の厚さ
         float piecethickness = 0.01f;
         #endregion
@@ -623,7 +689,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
                 //駒の内側の色を塗る
                 PaintColor(Piece[x, y], PointInside, Const.CO.InsideNumber);
                 //Pointの数字を表示するテキストのObjectを取得
-                Point[y * Const.CO.Si + x] = Piece[x, y].transform.Find(Const.CO.PointNumberURL).gameObject;
+                Point[y * Si + x] = Piece[x, y].transform.Find(Const.CO.PointNumberURL).gameObject;
                 //駒にPointを示す数字を表示
                 Piece[x, y].GetComponent<PointPieceScript>().ChangePoint(point);
             }
@@ -644,11 +710,11 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
                 //駒の内側の色を変更
                 Piece[x, y].transform.Find(Const.CO.PointInsideURL).gameObject.GetComponent<Renderer>().material = PointInside;
                 //Pointの数字を表示するテキストのObjectを取得
-                Point[y * Const.CO.Si + x] = Piece[x, y].transform.Find(Const.CO.PointNumberURL).gameObject;
+                Point[y * Si + x] = Piece[x, y].transform.Find(Const.CO.PointNumberURL).gameObject;
                 //Pointの数字を表示するテキストのObjectの「TextMeshProUGUI」Component取得
-                PointText[y * Const.CO.Si + x] = Point[y * Const.CO.Si + x].GetComponent<TextMeshProUGUI>();
+                PointText[y * Si + x] = Point[y * Si + x].GetComponent<TextMeshProUGUI>();
                 //Pointの数字を表示
-                PointText[y * Const.CO.Si + x].text = point.ToString();
+                PointText[y * Si + x].text = point.ToString();
             }
 
         }
@@ -658,12 +724,13 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     private void BoardGet()
     {
         #region 変数定義
+
         //ゲーム盤のPrehabの保存場所のURL
         string Pre_Board = Const.CO.GameBoardURL + gameboard.name;
         //ゲーム番の回転
         Quaternion rotation = new Quaternion(0, 0, 0, 0);
         //ゲーム番の大きさ
-        float scale = 68.3185251f;
+        float scale = (float)(Const.CO.MaxScale / Si);
         //ゲーム盤面の厚さ
         float boardthickness = 0.01f;
         //ゲーム番の位置
@@ -671,33 +738,33 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         #endregion
 
         //ゲーム盤を１枚づつ生成
-        for (int y = 0; y < Const.CO.Ver; y++)
+        for (int y = 0; y < Ver; y++)
         {
-            for (int x = 0; x < Const.CO.Si; x++)
+            for (int x = 0; x < Si; x++)
             {
                 #region 盤面の生成位置の誤差を調整
                 //盤面の位置の調整用の数値(盤面が偶数なら0.5,奇数なら0)
                 float Gosa_Si = 0; //横の誤差
                 float Gosa_Ver = 0; //縦の誤差
                 //盤面の横の大きさが偶数の時
-                if (Const.CO.Si % 2 == 0)
+                if (Si % 2 == 0)
                 {
-                    Gosa_Si = (float)((Const.CO.Si / 2) - 0.5);
+                    Gosa_Si = (float)((Si / 2) - 0.5);
                 }
                 //盤面の横の大きさが奇数の時
                 else
                 {
-                    Gosa_Si = (float)((Const.CO.Si -1) / 2);
+                    Gosa_Si = (float)((Si -1) / 2);
                 }
                 //盤面の縦の大きさが偶数の時
-                if (Const.CO.Ver % 2 == 0)
+                if (Ver % 2 == 0)
                 {
-                    Gosa_Ver = (float)((Const.CO.Ver / 2) - 0.5);
+                    Gosa_Ver = (float)((Ver / 2) - 0.5);
                 }
                 //盤面の縦の大きさが奇数の時
                 else
                 {
-                    Gosa_Ver = (float)((Const.CO.Ver - 1) / 2);
+                    Gosa_Ver = (float)((Ver - 1) / 2);
                 }
                 #endregion
 
@@ -722,52 +789,39 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
                 if (ONLINE)
                 {
                     //ゲーム盤のインスタンスを生成
-                    Board[y * Const.CO.Si + x] = PhotonNetwork.Instantiate(Pre_Board, vec, rotation, 0);
+                    Board[y * Si + x] = PhotonNetwork.Instantiate(Pre_Board, vec, rotation, 0);
                     //ゲーム盤のObjectの親を設定
-                    Board[y * Const.CO.Si + x].GetComponent<BoardScript>().SetParent();
+                    Board[y * Si + x].GetComponent<BoardScript>().SetParent();
                     //ゲーム盤のObjectの名前を設定
-                    Board[y * Const.CO.Si + x].GetComponent<BoardScript>().ChangeName(Const.CO.BoardName + x + Const.CO.BoardName_Connect + y);
+                    Board[y * Si + x].GetComponent<BoardScript>().ChangeName(Const.CO.BoardName + x + Const.CO.BoardName_Connect + y);
                     //ゲーム盤の大きさを設定
-                    Board[y * Const.CO.Si + x].GetComponent<BoardScript>().ChangeScale(new Vector3(scale, scale, boardthickness));
+                    Board[y * Si + x].GetComponent<BoardScript>().ChangeScale(new Vector3(scale, scale, boardthickness));
                     //ゲーム盤に色を塗る
-                    PaintColor(Board[y * Const.CO.Si + x], matrial, Const.CO.BoardNumber);
+                    PaintColor(Board[y * Si + x], matrial, Const.CO.BoardNumber);
                 }
                 //OFFLINEの時
                 else
                 {
                     //ゲーム盤のインスタンスを生成
-                    Board[y * Const.CO.Si + x] = Instantiate(gameboard);
+                    Board[y * Si + x] = Instantiate(gameboard);
                     //ゲーム盤の位置を設定
-                    Board[y * Const.CO.Si + x].transform.localPosition = vec;
+                    Board[y * Si + x].transform.localPosition = vec;
                     //ゲーム盤のObjectの親を設定
-                    Board[y * Const.CO.Si + x].transform.SetParent(canvas.transform, false);
+                    Board[y * Si + x].transform.SetParent(canvas.transform, false);
                     //ゲーム盤の回転位置を設定
-                    Board[y * Const.CO.Si + x].transform.rotation = rotation;
+                    Board[y * Si + x].transform.rotation = rotation;
                     //ゲーム盤の大きさを設定
-                    Board[y * Const.CO.Si + x].transform.localScale = new Vector3(scale, scale, 0.01f);
+                    Board[y * Si + x].transform.localScale = new Vector3(scale, scale, 0.01f);
                     //ゲーム盤の名前を設定
-                    Board[y * Const.CO.Si + x].name = Const.CO.BoardName + x + Const.CO.BoardName_Connect + y;
+                    Board[y * Si + x].name = Const.CO.BoardName + x + Const.CO.BoardName_Connect + y;
                     //ゲーム盤の色を塗る
-                    Board[y * Const.CO.Si + x].GetComponent<Renderer>().material = matrial;
+                    Board[y * Si + x].GetComponent<Renderer>().material = matrial;
                 }
 
             }
         }
-        //PositionGet(); //プレイヤーが取得した駒を置く場所を生成
     }
-    /*
-    //プレイヤーが取得した駒を置く場所を生成
-    private void PositionGet()
-    {
-        //盤面との距離
-        float distance = 137f;
-        //大きさ
-        float scale = 1.0f;
-        //厚さ
-        float thickness = 0.01f;
 
-    }
-    */
     //色を塗る関数
     private void PaintColor(GameObject Board, Material boardColor, int type)
     {
@@ -797,36 +851,36 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         int order = 0; //移動可能な盤面のマスが配列に何個先に入っているか
         int n = 0; //まとめるのに必要な変数
         int number = 0; //選択可能な場所を見つけた個数
-        int Max_number = Const.CO.Si; //選択可能な場所の上限
+        int Max_number = Si; //選択可能な場所の上限
 
         //現在の手番が先手(横)の手番の時
         if (currentPlayer == Const.CO.SIDE)
         {
-            Max_number = Const.CO.Si; //選択可能な場所の上限
+            Max_number = Si; //選択可能な場所の上限
             main = mainY; //スタート駒のy座標を登録
             order = 1; //移動可能な盤面のマスが配列に何個先に入っているか
-            n = Const.CO.Si; //main * nするときに、必要(計算に必要な変数)
+            n = Si; //main * nするときに、必要(計算に必要な変数)
         }
         //現在の手番が後手(縦)の手番の時
         else if (currentPlayer == Const.CO.VERTICAL)
         {
-            Max_number = Const.CO.Ver; //選択可能な場所の上限
+            Max_number = Ver; //選択可能な場所の上限
             main = mainX; //スタート駒のx座標を登録
-            order = Const.CO.Si; //移動可能な盤面のマスが配列に何個先に入っているか
+            order = Si; //移動可能な盤面のマスが配列に何個先に入っているか
              n = 1; //main * nするときに、必要(計算に必要な変数)
         }
         #endregion
 
         //盤面を右下から見ていく
-        for (int y = 0; y < Const.CO.Ver; y++)
+        for (int y = 0; y < Ver; y++)
         {
-            for (int x = 0; x < Const.CO.Si; x++)
+            for (int x = 0; x < Si; x++)
             {
                 //選択している盤面のマテリアルを初期化
                 Material matrial = null;
 
                 //見ている個所が次に移動できる盤面の時かつ移動できる盤面の個数が上限を越えていない時
-                if (y * Const.CO.Si + x == (main * n) + (order * number) && number < Max_number)
+                if (y * Si + x == (main * n) + (order * number) && number < Max_number)
                 {
                     //色を登録
                     matrial = SelectBoardColor;
@@ -853,13 +907,13 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
                 if (ONLINE)
                 {
                     //盤面のマスに指定した色を塗る
-                    PaintColor(Board[y * Const.CO.Si + x], matrial, Const.CO.BoardNumber);
+                    PaintColor(Board[y * Si + x], matrial, Const.CO.BoardNumber);
                 }
                 //OFFLINEの時
                 else
                 {
                     //盤面のマスに指定した色を塗る
-                    Board[y * Const.CO.Si + x].GetComponent<Renderer>().material = matrial;
+                    Board[y * Si + x].GetComponent<Renderer>().material = matrial;
                 }
                 #endregion
 
@@ -880,6 +934,10 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         GameObject score_object = null; //取った石の合計得点を記載するテキストを持つObject
         TextMeshProUGUI score_text = null; //取った石の合計得点を記載するテキスト
         string name = "Score"; //得点の前につけるテキスト
+        Vector3 vec = new Vector3(530f, 214.5f, -80.0299f); //取った駒を配置する位置
+        Quaternion rotation = new Quaternion(0, 0, 0, 0);
+        //Vector3 scale = new Vector3(0.04452032f, 100f, 0.01300387f); //取った駒を配置する大きさ
+        int row = 3; //この数字ずつ並べる
 
         //先手の手番の時
         if (currentPlayer == Const.CO.SIDE)
@@ -906,9 +964,12 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
             Score = ScoreB; //後手の得点
             score_object = scoreB_object; //後手の得点を記載するテキストを持つObject
             score_text = scoreB_text; //後手の得点を記載するテキスト
+            vec = new Vector3(-770f, 214.5f, -80.0299f); //取った駒を配置する位置
             //ONLINEの時、名前を取得
             if (ONLINE) name = PhotonNetwork.PlayerList[1].NickName;
         }
+
+        vec = vec + new Vector3((float)((stoneX % row) * 100), (float)((stoneX / row) * -80), 0);
         #endregion
 
         #region デバッグ用
@@ -942,7 +1003,9 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
             mainX = x; //スタート駒のx座標を更新
             mainY = y; //スタート駒のy座標を更新
             //取った駒の位置を更新
-            GetPiece[stoneX].GetComponent<PointPieceScript>().ChangeGetPosition(Player, stoneX);
+            GetPiece[stoneX].GetComponent<PointPieceScript>().ChangeGetPosition(Player, stoneX,vec);
+            //GetPiece[stoneX].transform.rotation = rotation;
+            //GetPiece[stoneX].transform.localScale = GetPiece[stoneX].transform.Scale;
             stoneX++; //取った駒の枚数の更新
             //得点のテキストの更新
             score_object.GetComponent<TextScript>().ChangeText(name + ":" + Score);
@@ -1031,7 +1094,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         if (currentPlayer == Const.CO.SIDE)
         {
             //縦を確認
-            for (int i = 0; i < Const.CO.Ver; i++)
+            for (int i = 0; i < Ver; i++)
             {
                 //スタート駒と同じ縦位置にポイント駒がある時
                 if (squares[mainX, i] != Const.CO.EMPTY && squares[mainX, i] != Const.CO.MAIN)
@@ -1045,7 +1108,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         else if (currentPlayer == Const.CO.VERTICAL)
         {
             //横を確認
-            for (int i = 0; i < Const.CO.Si; i++)
+            for (int i = 0; i < Si; i++)
             {
                 //スタート駒と同じ横位置にポイント駒がある時
                 if (squares[i, mainY] != Const.CO.EMPTY && squares[i, mainY] != Const.CO.MAIN)
@@ -1079,9 +1142,9 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         #region ボタンの変数
         //タイトルに戻るボタンの変数
         //ボタンの位置
-        Vector3 position = new Vector3(-150, -128, -canvas.transform.position.z - 1);
+        Vector3 position = new Vector3(-380, -300, -canvas.transform.position.z - 1);
         //ボタンの大きさ
-        Vector3 scale = new Vector3(5f, 5f, 5f);
+        Vector3 scale = new Vector3(10f, 10f, 10f);
         //ボタンの回転位置
         Quaternion rotation = new Quaternion(0, 0, 0, 0);
         //ボタン内部のテキスト
@@ -1092,9 +1155,9 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
 
         //リトライボタンの変数
         //ボタンの位置
-        Vector3 position3 = new Vector3(150, -128, -canvas.transform.position.z - 1);
+        Vector3 position3 = new Vector3(380, -300, -canvas.transform.position.z - 1);
         //ボタンの大きさ
-        Vector3 scale3 = new Vector3(5f, 5f, 5f);
+        Vector3 scale3 = new Vector3(10f, 10f, 10f);
         //ボタンの回転位置
         Quaternion rotation3 = new Quaternion(0, 0, 0, 0);
         //ボタン内部のテキスト
@@ -1137,7 +1200,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
             var rtf2 = button2.GetComponent<RectTransform>();//ボタンのサイズ
             rtf2.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Width2);// 横方向のサイズ
             rtf2.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Height2);// 縦方向のサイズ
-            button2.GetComponent<Button>().onClick.AddListener(btn.LobbyButton);//ボタンのアクションを設定
+            button2.GetComponent<Button>().onClick.AddListener(btn.TitleButton);//ボタンのアクションを設定
 
 
 
@@ -1296,6 +1359,15 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         }
 
     }
+
+    #endregion
+
+    #region Public関数
+    // Photonサーバ切断処理
+    public void DisConnectPhoton()
+    {
+        PhotonNetwork.Disconnect();
+    }
     #endregion
 
     #region PunRPC Private 関数
@@ -1336,5 +1408,20 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     {
         currentPlayer = turn;
     }
+    [PunRPC] //残り時間を同期させるための関数
+    private void RpcTimeUpdate(int player, string time,int timecount)
+    {
+
+        if (player == Const.CO.SIDE)
+        {
+            time_A = timecount;
+            timeA_text.text = time;
+        }else if(player == Const.CO.VERTICAL)
+        {
+            time_B = timecount;
+            timeB_text.text = time;
+        }
+    }
+
     #endregion
 }
