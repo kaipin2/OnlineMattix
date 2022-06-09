@@ -1,9 +1,8 @@
 # Mattix(ボードゲーム)をネット対戦できるようにUnityで制作
-<p align="center">
- <img src="https://user-images.githubusercontent.com/86358104/172784169-bd1c4c62-153c-488c-bc51-ba4df1bb2cf0.jpg" />
- <img src="https://user-images.githubusercontent.com/86358104/172784215-0a991191-89c5-40d5-b0b0-1a65cd8dcb7a.jpg" />
- <img src="https://user-images.githubusercontent.com/86358104/172784206-e7a3b794-7be7-4154-8c84-555abbe50843.jpg" />
- </p>
+
+ | Mattixゲーム                        |  外部ツール(PUN2)            |  外部ツール(TexyMeshPro)          |
+ | ----                               | ----                  | ----                  | 
+ |<img src="https://user-images.githubusercontent.com/86358104/172784169-bd1c4c62-153c-488c-bc51-ba4df1bb2cf0.jpg" />| <img src="https://user-images.githubusercontent.com/86358104/172784215-0a991191-89c5-40d5-b0b0-1a65cd8dcb7a.jpg" />| <img src="https://user-images.githubusercontent.com/86358104/172784206-e7a3b794-7be7-4154-8c84-555abbe50843.jpg" />|
  
 
 環境：Unity 2021.2.5f1  
@@ -14,6 +13,8 @@
 2021.2.5f1を使用し、ネット対戦の環境を作るためにPUN2を、
 日本語のテキストを実装するためにTextMeshProを実装しています。
 
+# 0.ゲームの動き
+https://youtu.be/405UuXExUAc
 # 1.シーンの役割
  
 **Titleシーン**  
