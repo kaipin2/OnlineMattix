@@ -21,16 +21,30 @@
  
 # 1.シーンの役割
  
-**Titleシーン**  
-ゲームを開始したら一番初めに入るシーン、他のシーンへのパスを多く持ち、「ネット対戦のロビーに入室する」か、「ゲームの説明を見る」か、「ひとりでゲームをする」かを選ぶことができる  
+## **Titleシーン** 
 
-**Lobbyシーン**  
+![Title](https://user-images.githubusercontent.com/86358104/172790046-6e830bab-b376-43d1-8bae-77c6b8631a60.png)
+![option](https://user-images.githubusercontent.com/86358104/172791809-a9bc6567-65cd-48c9-9d4a-19b83433fce2.png)
+
+ゲームを開始したら一番初めに入るシーン、他のシーンへのパスを多く持ち、「ネット対戦のロビーに入室する」か、「ゲームの説明を見る」か、「ひとりでゲームをする」かを選ぶことができる (右上の歯車を押すと、Option画面が出てくる) 
+
+## **Lobbyシーン**  
+
+![Lobby](https://user-images.githubusercontent.com/86358104/172790957-a42695e3-5351-4cd3-a3ff-149fe4d3eeba.png)
+
 ネット対戦を行うために入るシーン、ここで、既存のルームに入ったり、自分でルームを制作したりすることができる。  
 
-**Explanationシーン**  
+## **Explanationシーン**  
+
+![Explanation](https://user-images.githubusercontent.com/86358104/172791097-a17b7be8-3883-4223-95b6-bb123087da48.png)
+
 ゲームの説明を行うシーン、ここで、Matttixのゲームルールを理解することができる。  
 
-**マティックスシーン**  
+## **マティックスシーン**  
+
+![Mattix](https://user-images.githubusercontent.com/86358104/172791403-eeaa52ce-1d52-4ba9-a8be-272342c9f370.png)
+![Finish](https://user-images.githubusercontent.com/86358104/172791663-70700da6-fbc3-4621-aa82-19138d31de62.png)
+
 実際にMattixを行うシーン、一人で行うときも、二人で行うときも、同じシーンに入り、ゲームが終了したら、Lobbyシーンに戻る。しかし、ゲームを棄権(ゲーム終了ボタンを押す)した場合は、Titleシーンに戻る。
 
 # 2.各スクリプトの役割
