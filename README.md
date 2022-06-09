@@ -14,7 +14,11 @@
 日本語のテキストを実装するためにTextMeshProを実装しています。
 
 # 0.ゲームの動き
-[![Mattix](https://img.youtube.com/vi/405UuXExUAc/0.jpg)](https://www.youtube.com/watch?v=405UuXExUAc)
+
+ | Mattixゲーム Youtube動画(クリックで再生)            |
+ | ----                                              |
+ |[![Mattix](https://img.youtube.com/vi/405UuXExUAc/0.jpg)](https://www.youtube.com/watch?v=405UuXExUAc)|
+ 
 # 1.シーンの役割
  
 **Titleシーン**  
