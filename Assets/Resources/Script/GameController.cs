@@ -127,6 +127,9 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     private Canvas Audio; //AudioCanvas
 
     private Buttons btn; //ボタンのスクリプト
+
+    //デバッグ用ボード配置
+    //private int[,] Board_pre = new int[,] { { 3, -7, -3 }, { 2, -3, 7 }, { -4, 100, 1 } };
     #endregion
 
     #region PrivateAccessor定義
@@ -562,8 +565,8 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     private void GenerateArray()
     {
         //mainの駒の配置をランダム配置
-        int MainPieceX = (int)UnityEngine.Random.Range(0.0f, (float)Si); //x座標
-        int MainPieceY = (int)UnityEngine.Random.Range(0.0f, (float)Ver); //y座標
+        int MainPieceX = 2;//(int)UnityEngine.Random.Range(0.0f, (float)Si); //x座標
+        int MainPieceY = 1;//(int)UnityEngine.Random.Range(0.0f, (float)Ver); //y座標
 
         //スタート駒の位置を設定(int値)
         squares[MainPieceX, MainPieceY] = Const.CO.MAIN;
@@ -581,9 +584,15 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
                 {
                     do
                     {
+                        
                         //Min～Max内の整数値のポイント駒を設定(int値)
                         point = (int)UnityEngine.Random.Range((float)Const.CO.Min, (float)Const.CO.Max);
+
+                        //デバッグ用ボード配置(上の行をコメントアウト)
+                        //point = Board_pre[x, y];
+                        
                         squares[x, y] = point;
+                        
                     } while (point == 0);
                 }
 

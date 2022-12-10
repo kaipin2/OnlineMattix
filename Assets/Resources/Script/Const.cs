@@ -10,7 +10,7 @@ namespace Const
 {
     public static class CO
     {
-        public static string GameVersion = "Ver 1.2.1"; //ゲームバージョン指定（設定しないと警告が出る）
+        public static string GameVersion = "Ver 1.2.2"; //ゲームバージョン指定（設定しないと警告が出る）
 
         //主にボタンで使用する変数
         public static string AudioObjectName = "Audio"; //AudioManagerがComponentされているGameobjectの名称

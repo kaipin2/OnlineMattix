@@ -47,12 +47,9 @@ public class OptionStatusController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (VolumeCanvas.enabled)
+        if (Size != int.Parse(ddtmp.options[ddtmp.value].text))
         {
-            if (Size != int.Parse(ddtmp.options[ddtmp.value].text))
-            {
-                Size = int.Parse(ddtmp.options[ddtmp.value].text);
-            }
+            Size = int.Parse(ddtmp.options[ddtmp.value].text);
         }
         if (this.GetComponent<Canvas>().worldCamera == null)
         {

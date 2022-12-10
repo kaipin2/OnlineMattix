@@ -161,6 +161,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaceb02dc8df48c40b2f28be82ebaa55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  VCscript: {fileID: 0}
+  TC_Script: {fileID: 0}
+  LC_Script: {fileID: 0}
+  PM_Script: {fileID: 0}
+  GC_Script: {fileID: 0}
+  EC_Script: {fileID: 0}
+  PW_Script: {fileID: 0}
+  MainObject: {fileID: 0}
+  LobbyObject: {fileID: 0}
+  PhotonManagerObject: {fileID: 0}
+  GameControllerObject: {fileID: 0}
+  ExplanationControllerObject: {fileID: 0}
+  ConfirmationWindowsObject: {fileID: 0}
+  OptionStatusControllerObject: {fileID: 0}
+  ButtonSetObject: []
+  ButtonSet: []
 --- !u!1 &7588357390899552695
 GameObject:
   m_ObjectHideFlags: 0

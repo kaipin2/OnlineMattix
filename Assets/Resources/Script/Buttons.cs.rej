@@ -1,0 +1,9 @@
+diff a/Assets/Resources/Script/Buttons.cs b/Assets/Resources/Script/Buttons.cs	(rejected hunks)
+@@ -301,7 +301,6 @@
+         //ネットに繋がっていたら切断する
+         if (PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode)
+         {
+-            UnityEngine.Debug.Log("in");
+             DisConnectPhoton();
+         }
+         else
