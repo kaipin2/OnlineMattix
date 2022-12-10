@@ -1,33 +1,58 @@
 # Mattix(ボードゲーム)をネット対戦できるようにUnityで制作
 
-環境：Unity 2021.2.5f1
+**ソースコードは、Assets/Resources/Scriptに存在します**
+
+ | Mattixゲーム                        |  外部ツール(PUN2)            |  外部ツール(TexyMeshPro)          |
+ | ----                               | ----                  | ----                  | 
+ |<img src="https://user-images.githubusercontent.com/86358104/172784169-bd1c4c62-153c-488c-bc51-ba4df1bb2cf0.jpg" />| <img src="https://user-images.githubusercontent.com/86358104/172784215-0a991191-89c5-40d5-b0b0-1a65cd8dcb7a.jpg" />| <img src="https://user-images.githubusercontent.com/86358104/172784206-e7a3b794-7be7-4154-8c84-555abbe50843.jpg" />|
+ 
+
+環境：Unity 2021.2.5f1  
+外部ツール：PUN2（オンライン対戦用のサーバー管理）,TextMeshPro（テキストの表示の幅を広げるツール） 
 
 このゲームは、Mattixというボードゲームをネット対戦
 できるように開発したもので、開発環境としては、Unityの
 2021.2.5f1を使用し、ネット対戦の環境を作るためにPUN2を、
 日本語のテキストを実装するためにTextMeshProを実装しています。
 
+# 0.ゲームの動き
+
+ | Mattixゲーム Youtube動画(クリックで再生)            |
+ | ----                                              |
+ |[![Mattix](https://img.youtube.com/vi/405UuXExUAc/0.jpg)](https://www.youtube.com/watch?v=405UuXExUAc)|
+ 
 # 1.シーンの役割
  
-**Titleシーン**  
-ゲームを開始したら一番初めに入るシーン、他のシーンへのパスを多く持ち、「ネット対戦のロビーに入室する」か、「ゲームの説明を見る」か、「ひとりでゲームをする」かを選ぶことができる  
+## **Titleシーン** 
 
-**Lobbyシーン**  
+![Title](https://user-images.githubusercontent.com/86358104/172790046-6e830bab-b376-43d1-8bae-77c6b8631a60.png)
+![option](https://user-images.githubusercontent.com/86358104/172791809-a9bc6567-65cd-48c9-9d4a-19b83433fce2.png)
+
+ゲームを開始したら一番初めに入るシーン、他のシーンへのパスを多く持ち、「ネット対戦のロビーに入室する」か、「ゲームの説明を見る」か、「ひとりでゲームをする」かを選ぶことができる (右上の歯車を押すと、Option画面が出てくる) 
+
+## **Lobbyシーン**  
+
+![Lobby](https://user-images.githubusercontent.com/86358104/172790957-a42695e3-5351-4cd3-a3ff-149fe4d3eeba.png)
+
 ネット対戦を行うために入るシーン、ここで、既存のルームに入ったり、自分でルームを制作したりすることができる。  
 
-**Explanationシーン**  
+## **Explanationシーン**  
+
+![Explanation](https://user-images.githubusercontent.com/86358104/172791097-a17b7be8-3883-4223-95b6-bb123087da48.png)
+
 ゲームの説明を行うシーン、ここで、Matttixのゲームルールを理解することができる。  
 
-**マティックスシーン**  
+## **マティックスシーン**  
+
+![Mattix](https://user-images.githubusercontent.com/86358104/172791403-eeaa52ce-1d52-4ba9-a8be-272342c9f370.png)
+![Finish](https://user-images.githubusercontent.com/86358104/172791663-70700da6-fbc3-4621-aa82-19138d31de62.png)
+
 実際にMattixを行うシーン、一人で行うときも、二人で行うときも、同じシーンに入り、ゲームが終了したら、Lobbyシーンに戻る。しかし、ゲームを棄権(ゲーム終了ボタンを押す)した場合は、Titleシーンに戻る。
 
 # 2.各スクリプトの役割
 ## 2.1 Titleシーンのスクリプト
 **2.1.1 Title Controller**  
 Titleシーンのメインスクリプト。Title画面にボタンを配置し、Actionを設定したり、このゲームのバージョンの表示、BGMを流す命令などを行ったりしている。  
-
-**2.1.2 Photon Manager**  
-Photon View とPhoton Transform（PUN2に存在）を持っているObjectに付いているスクリプトで、Titleシーンでは、一人用(Offline)のゲームを開始するときに、マティックスシーンに遷移するための関数を持っているスクリプト。詳しくは、2.2.2で説明している。  
 
 ## 2.2 Lobbyシーンのスクリプト
 **2.2.1 Lobby Controller**  
@@ -60,8 +85,10 @@ BGMやSEを再生したり、音量の調節をしたりするスクリプト。
 BGMの変更や、Sliderの値をAudio Managerに伝えるためのスクリプト  
 
 **2.5.3 Option Manager**  
-今が、ゲーム中かゲーム中でないかを判断し、ゲーム中なら、「ゲーム終了」というボタンを表示するスクリプト。  
+Optionの画面にて、今が、ゲーム中かゲーム中でないかを判断し、ゲーム中なら、「ゲーム終了」というボタンを表示するスクリプト。  
 
+**2.5.4 OptionStatusController**  
+Optionの画面にて、現在のシーンを判断して、追従するカメラを探したり、対戦中(Mattixシーン)ならば、Option画面の盤面の大きさを設定する表示を消したりするスクリプト。
 ## 2.6 シーン内に登場しないスクリプト
 **2.6.1 Board Script**  
 マティックスシーンに登場する盤面のコンポーネントとして存在するスクリプトであり、盤面の色の変更や、大きさの変更、オブジェクトの名前の変更などの同期を行っている。  
@@ -85,4 +112,18 @@ BGMの変更や、Sliderの値をAudio Managerに伝えるためのスクリプ�
 テキストの同期を行うためのスクリプト。テキストの書いてある内容や書き方(左詰め、右詰めなど)、色の変更を同期させる  
 
 **2.6.8 ColorSerializer**  
-[RPC]で同期を行うときに、引数としてColor型を与えられるようにするスクリプト。GameControllerのスクリプトで使用している。  
+[RPC]で同期を行うときに、引数としてColor型を与えられるようにするスクリプト。GameControllerのスクリプトで使用している。
+※[RPC]：PUN2での同期方法の１つ、[PunRPC]属性をつけたメソッドをPhotonViewのRPC()から呼び出すことで、ルーム内の他プレイヤー側でもメソッドを実行することができます。RPC()の第一引数は実行するメソッド名、第二引数はRPCを実行する対象、そして第三引数以降が実行するメソッドの引数です。
+
+| RPCを実行する対象                   |  送信者自身            |  他プレイヤー          |　途中参加者     |
+| ----                               | ----                  | ----                  | ----           |
+| RpcTarget.All　　                  |  即座に実行される      |  通信を介して実行される |	実行されない     |
+| RpcTarget.Others　　               | 実行されない	          | 通信を介して実行される | 実行されない     |
+| RpcTarget.AllBuffered　　          |  即座に実行される      | 通信を介して実行される | 実行される       |
+| RpcTarget.OthersBuffered          |  実行されない          | 通信を介して実行される | 実行される       |
+| RpcTarget.AllViaServer            |  通信を介して実行される | 通信を介して実行される | 実行されない     |
+| RpcTarget.AllBufferedViaServer    |  通信を介して実行される | 通信を介して実行される | 実行される       |
+
+| RPCを実行する対象                   |  マスタークライアント（送信者自身） | マスタークライアント（他プレイヤー）| それ以外のプレイヤー |
+| ----                               | ----                             | ----                            | ----                |
+| RpcTarget.MasterClient             |  即座に実行される                 | 通信を介して実行される             | 実行されない        |
