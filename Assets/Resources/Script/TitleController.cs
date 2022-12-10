@@ -89,7 +89,7 @@ public class TitleController : MonoBehaviourPunCallbacks//MonoBehaviour
         SoundP = AudioObject.GetComponent<SoundPresenter>();
 
         //BGM始動
-        SoundP.ChangeBGM(3);
+        SoundP.ChangeBGM(2);
 
         //Title内のTextのComponentを取得
         TitleText = GameObject.Find(Const.CO.TitleName).GetComponent<TextMeshProUGUI>();

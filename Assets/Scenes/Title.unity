@@ -1623,22 +1623,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaceb02dc8df48c40b2f28be82ebaa55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VCscript: {fileID: 0}
-  TC_Script: {fileID: 0}
-  LC_Script: {fileID: 0}
-  PM_Script: {fileID: 0}
-  GC_Script: {fileID: 0}
-  EC_Script: {fileID: 0}
-  PW_Script: {fileID: 0}
-  MainObject: {fileID: 0}
-  LobbyObject: {fileID: 0}
-  PhotonManagerObject: {fileID: 0}
-  GameControllerObject: {fileID: 0}
-  ExplanationControllerObject: {fileID: 0}
-  ConfirmationWindowsObject: {fileID: 0}
-  OptionStatusControllerObject: {fileID: 0}
-  ButtonSetObject: []
-  ButtonSet: []
 --- !u!1 &730790664
 GameObject:
   m_ObjectHideFlags: 0
@@ -3043,22 +3027,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaceb02dc8df48c40b2f28be82ebaa55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VCscript: {fileID: 0}
-  TC_Script: {fileID: 0}
-  LC_Script: {fileID: 0}
-  PM_Script: {fileID: 0}
-  GC_Script: {fileID: 0}
-  EC_Script: {fileID: 0}
-  PW_Script: {fileID: 0}
-  MainObject: {fileID: 0}
-  LobbyObject: {fileID: 0}
-  PhotonManagerObject: {fileID: 0}
-  GameControllerObject: {fileID: 0}
-  ExplanationControllerObject: {fileID: 0}
-  ConfirmationWindowsObject: {fileID: 0}
-  OptionStatusControllerObject: {fileID: 0}
-  ButtonSetObject: []
-  ButtonSet: []
 --- !u!114 &1120215081
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4310,22 +4278,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaceb02dc8df48c40b2f28be82ebaa55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VCscript: {fileID: 0}
-  TC_Script: {fileID: 0}
-  LC_Script: {fileID: 0}
-  PM_Script: {fileID: 0}
-  GC_Script: {fileID: 0}
-  EC_Script: {fileID: 0}
-  PW_Script: {fileID: 0}
-  MainObject: {fileID: 0}
-  LobbyObject: {fileID: 0}
-  PhotonManagerObject: {fileID: 0}
-  GameControllerObject: {fileID: 0}
-  ExplanationControllerObject: {fileID: 0}
-  ConfirmationWindowsObject: {fileID: 0}
-  OptionStatusControllerObject: {fileID: 0}
-  ButtonSetObject: []
-  ButtonSet: []
 --- !u!114 &1611851762
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4804,22 +4756,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaceb02dc8df48c40b2f28be82ebaa55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VCscript: {fileID: 0}
-  TC_Script: {fileID: 0}
-  LC_Script: {fileID: 0}
-  PM_Script: {fileID: 0}
-  GC_Script: {fileID: 0}
-  EC_Script: {fileID: 0}
-  PW_Script: {fileID: 0}
-  MainObject: {fileID: 0}
-  LobbyObject: {fileID: 0}
-  PhotonManagerObject: {fileID: 0}
-  GameControllerObject: {fileID: 0}
-  ExplanationControllerObject: {fileID: 0}
-  ConfirmationWindowsObject: {fileID: 0}
-  OptionStatusControllerObject: {fileID: 0}
-  ButtonSetObject: []
-  ButtonSet: []
 --- !u!1 &1796238887
 GameObject:
   m_ObjectHideFlags: 0
@@ -5457,11 +5393,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7588357390526431605, guid: ad1ac4861b5669e4faa42dcbb2a597e4, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 35.37
+      value: 25.54
       objectReference: {fileID: 0}
     - target: {fileID: 7588357390526431605, guid: ad1ac4861b5669e4faa42dcbb2a597e4, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 28.5
+      value: 25.02
       objectReference: {fileID: 0}
     - target: {fileID: 7588357390526431605, guid: ad1ac4861b5669e4faa42dcbb2a597e4, type: 3}
       propertyPath: m_LocalScale.x
@@ -5505,11 +5441,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7588357390526431605, guid: ad1ac4861b5669e4faa42dcbb2a597e4, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 819.47
+      value: 800
       objectReference: {fileID: 0}
     - target: {fileID: 7588357390526431605, guid: ad1ac4861b5669e4faa42dcbb2a597e4, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 463.32
+      value: 470
       objectReference: {fileID: 0}
     - target: {fileID: 7588357390526431605, guid: ad1ac4861b5669e4faa42dcbb2a597e4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -5522,14 +5458,6 @@ PrefabInstance:
     - target: {fileID: 7588357390526431605, guid: ad1ac4861b5669e4faa42dcbb2a597e4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7588357390526431607, guid: ad1ac4861b5669e4faa42dcbb2a597e4, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: 126667230e35b274fa194ea1df254c26, type: 3}
-    - target: {fileID: 7588357390526431607, guid: ad1ac4861b5669e4faa42dcbb2a597e4, type: 3}
-      propertyPath: m_Material
-      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ad1ac4861b5669e4faa42dcbb2a597e4, type: 3}
