@@ -92,7 +92,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     //オブジェクト(ゲーム盤)の名前を分割する
     private static char[] separetechar1 = Const.CO.BoardName.ToCharArray();
     private static char[] separetechar2 = Const.CO.BoardName_Connect.ToCharArray();
-    private char[] separate = { separetechar1[separetechar1.Length - 1] , separetechar2 [separetechar2.Length - 1] }; //Cube(数字)_(数字)の数字の部分を取り出す
+    private char[] separate = { separetechar1[separetechar1.Length - 1], separetechar2[separetechar2.Length - 1] }; //Cube(数字)_(数字)の数字の部分を取り出す
     //音量を設定する画面のObject
     private GameObject audiocanvas;
     //音量を設定するObject
@@ -132,17 +132,20 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     #region PrivateAccessor定義
     private int TimeCount
     {
-        get {
+        get
+        {
             if (currentPlayer == Const.CO.SIDE)
             {
                 return time_A;
-            }else if (currentPlayer == Const.CO.VERTICAL)
+            }
+            else if (currentPlayer == Const.CO.VERTICAL)
             {
                 return time_B;
             }
             return -1;//エラー
         }
-        set {
+        set
+        {
             if (currentPlayer == Const.CO.SIDE)
             {
                 time_A = value;
@@ -151,7 +154,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
             {
                 time_B = value;
             }
-            
+
         }
     }
     private TextMeshProUGUI TimeText
@@ -214,7 +217,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     public Material pointColor; //プラスのポイント駒の外側の色
     public Material unpointColor; //マイナスのポイント駒の外側の色
     public Material PointInside; //ポイント駒の内側の色
-    
+
 
     #endregion
 
@@ -282,10 +285,10 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
 
         //自分が先手か後手かを確認
         CheckTurnPlayer();
-        if (ONLINE) 
-        { 
-        
-            
+        if (ONLINE)
+        {
+
+
             if (TurnPlayer)
             {
                 Turn_Status.GetComponent<TextScript>().ChengeText_Diff(Const.CO.FirstPlayerText); //自分が先手番であると表示
@@ -297,7 +300,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         }
         else
         {
-            Turn_Status.GetComponent<TextScript>().ChangeText(Const.CO.OnePlayerText); //自分が後手番であると表示
+            Turn_Status.GetComponent<TextScript>().ChangeText(Const.CO.OnePlayerText); //自分が一人であると表示
         }
 
 
@@ -313,7 +316,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
             {
                 TimeManager();
             }
-           
+
             //ONLINEで参加人数が２人未満(途中で相手が落ちたとき)はタイトルに戻る
             if (ONLINE) //ONLINEの時
             {
@@ -381,7 +384,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
             //UnityEngine.Debug.Log("OFFLINE");
             ONLINE = false;
         }
-        
+
         //画面のObjectの取得
         audiocanvas = GameObject.Find(Const.CO.AudioCanvasName).gameObject; //音量画面のObjectを取得
         Maincanvas = canvas.GetComponent<Canvas>(); //メイン画面のObjectを取得
@@ -404,8 +407,8 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         //制限時間を表示するテキスト
         timeA_text = timeA_object.GetComponent<TextMeshProUGUI>();
         timeB_text = timeB_object.GetComponent<TextMeshProUGUI>();
-        timeA_text.text = "TIME:"+(time_A / 60).ToString("00") + ":"+(time_A % 60).ToString("00");
-        timeB_text.text = "TIME:"+(time_B / 60).ToString("00") + ":"+(time_B % 60).ToString("00");
+        timeA_text.text = "TIME:" + (time_A / 60).ToString("00") + ":" + (time_A % 60).ToString("00");
+        timeB_text.text = "TIME:" + (time_B / 60).ToString("00") + ":" + (time_B % 60).ToString("00");
         //ONLINEでゲームをしているなら
         if (ONLINE)
         {
@@ -442,7 +445,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
     }
 
     //盤面の大きさをセットする関数
-    private void SetBoardSize(int ver,int si)
+    private void SetBoardSize(int ver, int si)
     {
         Ver = ver;
         Si = si;
@@ -456,7 +459,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         {
             int time = TimeCount - 1;
             TextMeshProUGUI time_text = TimeText;
-            int judge = currentPlayer == Const.CO.SIDE ? 1:2; //時間切れになる可能性があるのはどちらか(1:先手,2:後手)
+            int judge = currentPlayer == Const.CO.SIDE ? 1 : 2; //時間切れになる可能性があるのはどちらか(1:先手,2:後手)
 
             int sec = (int)time % 60;
             int min = (int)time / 60;
@@ -754,7 +757,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
                 //盤面の横の大きさが奇数の時
                 else
                 {
-                    Gosa_Si = (float)((Si -1) / 2);
+                    Gosa_Si = (float)((Si - 1) / 2);
                 }
                 //盤面の縦の大きさが偶数の時
                 if (Ver % 2 == 0)
@@ -867,7 +870,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
             Max_number = Ver; //選択可能な場所の上限
             main = mainX; //スタート駒のx座標を登録
             order = Si; //移動可能な盤面のマスが配列に何個先に入っているか
-             n = 1; //main * nするときに、必要(計算に必要な変数)
+            n = 1; //main * nするときに、必要(計算に必要な変数)
         }
         #endregion
 
@@ -1003,7 +1006,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
             mainX = x; //スタート駒のx座標を更新
             mainY = y; //スタート駒のy座標を更新
             //取った駒の位置を更新
-            GetPiece[stoneX].GetComponent<PointPieceScript>().ChangeGetPosition(Player, stoneX,vec);
+            GetPiece[stoneX].GetComponent<PointPieceScript>().ChangeGetPosition(Player, stoneX, vec);
             //GetPiece[stoneX].transform.rotation = rotation;
             //GetPiece[stoneX].transform.localScale = GetPiece[stoneX].transform.Scale;
             stoneX++; //取った駒の枚数の更新
@@ -1079,7 +1082,7 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
 
             //Playerを交代
             currentPlayer = -currentPlayer;
-            if(ONLINE)  photonView.RPC(nameof(RpcCurrentPlayer), RpcTarget.All, currentPlayer);
+            if (ONLINE) photonView.RPC(nameof(RpcCurrentPlayer), RpcTarget.All, currentPlayer);
             //移動可能なマスを表示
             SelectableBoard();
         }
@@ -1171,8 +1174,8 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         //ONLINeの時
         if (ONLINE)
         {
-            
-            GameObject button2 = PhotonNetwork.Instantiate(Const.CO.GameBoardURL + title_button.name,position,rotation,0);//タイトルに戻るボタンのインスタンス生成
+
+            GameObject button2 = PhotonNetwork.Instantiate(Const.CO.GameBoardURL + title_button.name, position, rotation, 0);//タイトルに戻るボタンのインスタンス生成
             button2.GetComponent<ButtonScript>().SetParent(Panel.name);//ボタンObjectの親を設定
             button2.GetComponent<ButtonScript>().ChangeScale(scale);//ボタンの大きさを変更
             //button2.GetComponent<ButtonScript>().ChangeText(Const.CO.NomalButtonURL + button.name + "/Text(TMP)", text2);
@@ -1224,20 +1227,22 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         {
             text = "  " + ScoreB + "  -  " + ScoreA;
 
-        }else if(TimeUp == 1)
+        }
+        else if (TimeUp == 1)
         {
             text = "先手：TIME UP";
-        }else if (TimeUp == 2)
+        }
+        else if (TimeUp == 2)
         {
             text = "後手：TIME UP";
         }
 
         Result_score.GetComponent<TextScript>().ChangeText(text);
         //後手の得点が先手の得点より大きいとき
-        if(TimeUp == 1)
+        if (TimeUp == 1)
         {
             //勝利テキストを表示
-            WIN.GetComponent<TextScript>().ChangeText("後手"+Const.CO.WINText);
+            WIN.GetComponent<TextScript>().ChangeText("後手" + Const.CO.WINText);
             //テキストを中詰めで表示
             WIN.GetComponent<TextScript>().ChangeAlignment(Const.CO.Center);
         }
@@ -1409,14 +1414,15 @@ public class GameController : MonoBehaviourPunCallbacks //MonoBehaviour
         currentPlayer = turn;
     }
     [PunRPC] //残り時間を同期させるための関数
-    private void RpcTimeUpdate(int player, string time,int timecount)
+    private void RpcTimeUpdate(int player, string time, int timecount)
     {
 
         if (player == Const.CO.SIDE)
         {
             time_A = timecount;
             timeA_text.text = time;
-        }else if(player == Const.CO.VERTICAL)
+        }
+        else if (player == Const.CO.VERTICAL)
         {
             time_B = timecount;
             timeB_text.text = time;
